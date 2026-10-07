@@ -15,7 +15,6 @@ TEST_CASE("Grid initialization and sector counting")
 
 
 
-    // Grid is 3x3
     REQUIRE(grid.sectorCount() == 200);
     REQUIRE(grid.rows() == 20);
     REQUIRE(grid.cols() == 10);
@@ -96,4 +95,22 @@ TEST_CASE("Grid sector center is inside the sector")
         REQUIRE(center.lonDeg >= config.grid().minLon);
         REQUIRE(center.lonDeg <= config.grid().maxLon);
     }
+}
+
+
+TEST_CASE("Position on an internal boundary belongs to a sector")
+{
+    Configuration config = createTestConfig();
+    Grid grid(config.grid());
+
+    double cellWidth =
+        (config.grid().maxLon - config.grid().minLon) / grid.cols();
+
+    Position boundary = grid.sectorCenter(0);
+    boundary.lonDeg = config.grid().minLon + cellWidth;
+
+    REQUIRE(grid.isInside(boundary));
+
+    int sectorId = grid.determineSector(boundary);
+    REQUIRE((sectorId == 0 || sectorId == 1));
 }

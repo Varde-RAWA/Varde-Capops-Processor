@@ -9,6 +9,30 @@
 #include <filesystem>
 #include <fstream>
 
+#include <catch2/catch_test_macros.hpp>
+#include <sw/redis++/redis++.h>
+#include <string>
+
+inline void requireRedisAvailable(const Configuration &config)
+{
+    std::string url = config.getRedisUrl();
+    url += (url.find('?') == std::string::npos) ? "?" : "&";
+    url += "connect_timeout=1000ms&socket_timeout=2000ms";
+
+    std::string response;
+
+    try
+    {
+        sw::redis::Redis redis(url);
+        response = redis.ping();
+    }
+    catch (const sw::redis::IoError &)
+    {
+        SKIP("Redis unavailable; test skipped.");
+    }
+    REQUIRE(response == "PONG");
+}
+
 // Helper function to create a test configuration
 inline Configuration createTestConfig()
 {

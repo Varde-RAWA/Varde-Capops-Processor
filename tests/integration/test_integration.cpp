@@ -7,11 +7,16 @@
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include "domain/types/WeatherSeverity.hpp"
+#include "ingest/IngestService.hpp"
 #include "proto/FlightData.pb.h"
 #include "publish/ProtoMapper.hpp"
 #include "publish/RedisPublisher.hpp"
 #include "sources/simulations/WeatherSimulator.hpp"
+#include "sources/TrackSourceSimulated.hpp"
+#include "sources/WeatherSourceSimulated.hpp"
+#include "sources/simulations/RadarSimulator.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 // ============================================================================
 // INTEGRATION TESTS - Combined logic
@@ -182,4 +187,83 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
         // Redis not available in test environment, but serialization verification passed
         REQUIRE(true);
     }
+}
+
+
+TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
+{
+    Configuration config = createTestConfig();
+    Grid grid(config.grid());
+
+    RadarSimulator simulator(config.grid());
+    simulator.initializeFlights(
+        {{59.25, 4.35}},
+        {{60.25, 4.35}},
+        {111.32}
+    );
+
+    TrackSourceSimulated trackSource(simulator);
+
+    WeatherSimulator weatherSimulator(
+        config.grid(), config.getSortedWeatherLevels()
+    );
+    WeatherSourceSimulated weatherSource(weatherSimulator);
+
+    IngestService ingest(config.grid(), &trackSource, &weatherSource);
+    ComputeData computeData(config);
+
+    simulator.tick(config.getTimestepSize());
+
+    auto tracks = ingest.getAllTracks();
+    REQUIRE(tracks.size() == 1);
+
+    for (const auto &track : tracks)
+        computeData.handleTrackUpdate(track);
+
+    ProcessingResult result = computeData.collectProcessingResult();
+
+    REQUIRE(result.tracks.size() == 1);
+
+    int sectorId = grid.determineSector(Position{59.251, 4.35});
+    REQUIRE(sectorId == 21);
+
+    auto sector = findSectorSummary(result, sectorId);
+    REQUIRE(sector != result.sectorSummaries.end());
+    REQUIRE(sector->getLocalAircraftCount() == 1);
+
+    auto identifiers = sector->getIcao24List();
+    REQUIRE(identifiers.size() == 1);
+    REQUIRE(identifiers[0] == "SIM-0");
+
+    FlightDataProto message = mapToProto(result, config, config.grid());
+
+    std::string bytes;
+    REQUIRE(message.SerializeToString(&bytes));
+
+    FlightDataProto decoded;
+    REQUIRE(decoded.ParseFromString(bytes));
+
+    REQUIRE(decoded.metadata().version() == config.getProtobufVersion());
+    REQUIRE(decoded.trackdata().totalaircraftcount() == 1);
+    REQUIRE(decoded.trackdata().tracks_size() == 1);
+
+    const auto &aircraft = decoded.trackdata().tracks(0);
+    REQUIRE(aircraft.icao24() == "SIM-0");
+    REQUIRE(aircraft.position().latitudedegrees() == Catch::Approx(59.251));
+    REQUIRE(aircraft.position().longitudedegrees() == Catch::Approx(4.35));
+    REQUIRE(aircraft.timestamp() == tracks[0].getTimestamp());
+    REQUIRE(aircraft.velocity().groundspeedknots() == Catch::Approx(216.0));
+
+    bool sectorFound = false;
+    for (const auto &summary : decoded.sectorsummarydata().sectorsummaries())
+    {
+        if (summary.sectorid() == sectorId)
+        {
+            sectorFound = true;
+            REQUIRE(summary.localaircraftcount() == 1);
+            REQUIRE(summary.icao24list_size() == 1);
+            REQUIRE(summary.icao24list(0) == "SIM-0");
+        }
+    }
+    REQUIRE(sectorFound);
 }
