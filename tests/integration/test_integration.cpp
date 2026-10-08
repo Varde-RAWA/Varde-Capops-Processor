@@ -3,17 +3,13 @@
 #include "compute/Grid.hpp"
 #include "config/Config.hpp"
 #include "domain/Track.hpp"
-#include "domain/WeatherCell.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include "ingest/IngestService.hpp"
 #include "proto/FlightData.pb.h"
 #include "publish/ProtoMapper.hpp"
 #include "publish/RedisPublisher.hpp"
-#include "sources/simulations/WeatherSimulator.hpp"
 #include "sources/TrackSourceSimulated.hpp"
-#include "sources/WeatherSourceSimulated.hpp"
 #include "sources/simulations/RadarSimulator.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
@@ -21,8 +17,7 @@
 // ============================================================================
 // INTEGRATION TESTS - Combined logic
 // ============================================================================
-
-TEST_CASE("Full workflow: track and weather updates generate results")
+TEST_CASE("Track updates generate aircraft and sector results")
 {
     Configuration config = createTestConfig();
     ComputeData computeData(config);
@@ -39,44 +34,31 @@ TEST_CASE("Full workflow: track and weather updates generate results")
         computeData.handleTrackUpdate(track);
     }
 
-    // Add weather to the sector
-    WeatherCell weatherCell(0, "2024-01-01T12:00:00Z", WeatherSeverity::DEGRADED);
-    computeData.handleWeatherUpdate(weatherCell);
-
     // Collect results
     ProcessingResult result = computeData.collectProcessingResult();
 
     auto sectorSummary0 = findSectorSummary(result, 0);
 
     REQUIRE(result.tracks.size() == 5);
-    REQUIRE(result.sectorSummaries.size() == config.grid().rows * config.grid().cols); // 3x3 = 9
-    REQUIRE(sectorSummary0->getWeatherSeverity() == WeatherSeverity::DEGRADED);
+    REQUIRE(result.sectorSummaries.size() == config.grid().rows * config.grid().cols);
     REQUIRE(sectorSummary0->getLocalAircraftCount() == 5);
 }
-
-TEST_CASE("Multiple sectors with different weather conditions")
+TEST_CASE("Aircraft counts are maintained across multiple sectors")
 {
     Configuration config = createTestConfig();
     ComputeData computeData(config);
     Grid grid(config.grid());
 
-    // Add tracks and weather to different sectors
     for (int sectorId = 0; sectorId < 4; ++sectorId)
     {
         Position center = grid.sectorCenter(sectorId);
 
-        // Add tracks
         for (int i = 0; i < 3; ++i)
         {
             Track track("FLIGHT_" + std::to_string(sectorId * 10 + i), "2024-01-01T12:00:00Z",
                         center, 10000.0, 450.0, 0.0, 180.0, 175.0);
             computeData.handleTrackUpdate(track);
         }
-
-        // Add different weather
-        WeatherSeverity severity = static_cast<WeatherSeverity>(sectorId % 4);
-        WeatherCell weatherCell(sectorId, "2024-01-01T12:00:00Z", severity);
-        computeData.handleWeatherUpdate(weatherCell);
     }
 
     ProcessingResult result = computeData.collectProcessingResult();
@@ -95,15 +77,6 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
     ComputeData computeData(config);
     Grid grid(config.grid());
 
-    // Create weather simulator and set some patterns
-    std::vector<std::pair<WeatherSeverity, double>> weatherLevels = config.getSortedWeatherLevels();
-    WeatherSimulator weatherSimulator(config.grid(), weatherLevels);
-
-    // Set constant weather patterns in specific sectors
-    weatherSimulator.setWeatherPattern(0, 0, 0.3); // Sector 0: light weather
-    weatherSimulator.setWeatherPattern(0, 1, 0.7); // Sector 1: heavy weather
-    weatherSimulator.tick(0.0);
-
     // Add multiple simulated tracks to different sectors
     std::vector<std::string> flightIds = {"SIM001", "SIM002", "SIM003", "SIM004", "SIM005"};
     std::vector<int> targetSectors = {0, 0, 1, 1, 2};
@@ -119,14 +92,6 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
         computeData.handleTrackUpdate(track);
     }
 
-    // Update weather for several sectors
-    for (int sectorId = 0; sectorId < 3; ++sectorId)
-    {
-        // Cycle through available weather severity levels
-        WeatherSeverity weatherSev = weatherLevels[sectorId % weatherLevels.size()].first;
-        WeatherCell weatherCell(sectorId, "2024-01-01T12:00:00Z", weatherSev);
-        computeData.handleWeatherUpdate(weatherCell);
-    }
 
     // Collect processing result from compute data
     ProcessingResult result = computeData.collectProcessingResult();
@@ -204,12 +169,7 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
 
     TrackSourceSimulated trackSource(simulator);
 
-    WeatherSimulator weatherSimulator(
-        config.grid(), config.getSortedWeatherLevels()
-    );
-    WeatherSourceSimulated weatherSource(weatherSimulator);
-
-    IngestService ingest(config.grid(), &trackSource, &weatherSource);
+    IngestService ingest(config.grid(), &trackSource);
     ComputeData computeData(config);
 
     simulator.tick(config.getTimestepSize());

@@ -1,7 +1,6 @@
 #include "publish/ProtoMapper.hpp"
 
 #include "domain/types/SectorState.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include "utils/time/IsoTimestamp.hpp"
 
 #include <string>
@@ -28,7 +27,6 @@ SectorSummaryProto mapToProto(const SectorSummary &summary)
     proto.set_sectorid(summary.getSectorId());
     proto.set_row(summary.getRow());
     proto.set_column(summary.getColumn());
-    proto.set_weatherseverity(weatherSeverityToString(summary.getWeatherSeverity()));
     proto.set_riskseverity(sectorStateToString(summary.getState()));
     proto.set_localaircraftcount(summary.getLocalAircraftCount());
     proto.set_localaircraftbasecapacity(static_cast<int>(summary.getBaseCapacity()));

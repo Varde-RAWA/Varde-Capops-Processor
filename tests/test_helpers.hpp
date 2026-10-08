@@ -53,12 +53,6 @@ inline Configuration createTestConfig()
     configFile << "[capacity]\n";
     configFile << "defaultBaseCapacity=1\n";
     configFile << "\n";
-    configFile << "[weatherFactors]\n";
-    configFile << "OK=1.0\n";
-    configFile << "DEGRADED=0.8\n";
-    configFile << "SEVERE=0.6\n";
-    configFile << "EXTREME=0.4\n";
-    configFile << "\n";
     configFile << "[protobufVersion]\n";
     configFile << "version=1\n";
     configFile << "\n";
@@ -102,12 +96,6 @@ inline Configuration createTestConfigApi()
     configFile << "\n";
     configFile << "[capacity]\n";
     configFile << "defaultBaseCapacity=1\n";
-    configFile << "\n";
-    configFile << "[weatherFactors]\n";
-    configFile << "OK=1.0\n";
-    configFile << "DEGRADED=0.8\n";
-    configFile << "SEVERE=0.6\n";
-    configFile << "EXTREME=0.4\n";
     configFile << "\n";
     configFile << "[protobufVersion]\n";
     configFile << "version=1\n";

@@ -4,7 +4,6 @@
 #include "domain/RiskEvent.hpp"
 #include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
-#include "domain/WeatherCell.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include "domain/types/SectorState.hpp"
 #include <deque>
@@ -16,7 +15,6 @@ class ComputeData
   public:
     ComputeData(const Configuration &config);
     void handleTrackUpdate(const Track &track);
-    void handleWeatherUpdate(const WeatherCell &weatherCell);
     ProcessingResult collectProcessingResult();
 
   private:

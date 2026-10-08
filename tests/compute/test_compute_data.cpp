@@ -3,11 +3,9 @@
 #include "compute/Grid.hpp"
 #include "config/Config.hpp"
 #include "domain/Track.hpp"
-#include "domain/WeatherCell.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include "domain/types/SectorState.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 // ============================================================================
@@ -78,73 +76,6 @@ TEST_CASE("ComputeData handles track update to same aircraft")
     REQUIRE(result.tracks[0].getAltitudeFeet() == 10050.0);
 }
 
-TEST_CASE("ComputeData handles weather update")
-{
-    Configuration config = createTestConfig();
-    ComputeData computeData(config);
-
-    WeatherCell weatherCell(0, "2024-01-01T12:00:00Z", WeatherSeverity::SEVERE);
-    computeData.handleWeatherUpdate(weatherCell);
-
-    ProcessingResult result = computeData.collectProcessingResult();
-
-    auto it = std::find_if(result.sectorSummaries.begin(), result.sectorSummaries.end(),
-                           [](const SectorSummary &summary) { return summary.getSectorId() == 0; });
-    REQUIRE(it != result.sectorSummaries.end());
-    REQUIRE(it->getWeatherSeverity() == WeatherSeverity::SEVERE);
-}
-
-TEST_CASE("ComputeData detects sector risk escalation")
-{
-    Configuration config = createTestConfig();
-    ComputeData computeData(config);
-
-    Grid grid(config.grid());
-    Position center = grid.sectorCenter(0);
-
-    ProcessingResult result = computeData.collectProcessingResult();
-
-    // Find summary for sector 0
-    auto sectorSummary0 = findSectorSummary(result, 0);
-    REQUIRE(sectorSummary0 != result.sectorSummaries.end());
-    REQUIRE(sectorSummary0->getState() == SectorState::NORMAL);
-
-    Track track("FLIGHT", "2024-01-01T12:00:00Z", center, 10000.0, 450.0, 0.0, 180.0, 175.0);
-    computeData.handleTrackUpdate(track);
-    result = computeData.collectProcessingResult();
-
-    sectorSummary0 = findSectorSummary(result, 0);
-    REQUIRE(sectorSummary0->getState() ==
-            SectorState::NORMAL); // Still NORMAL with 1 aircraft and OK weather
-
-    WeatherCell weatherCell(0, "2024-01-01T12:00:00Z", WeatherSeverity::SEVERE);
-    computeData.handleWeatherUpdate(weatherCell);
-    result = computeData.collectProcessingResult();
-
-    REQUIRE(result.riskEvents.size() > 0);
-    REQUIRE(result.riskEvents[0].getMessage().find("escalated") != std::string::npos);
-
-    sectorSummary0 = findSectorSummary(result, 0);
-    REQUIRE(sectorSummary0->getState() == SectorState::AT_RISK); // Now should be AT_RISK
-
-    Track track2("FLIGHT2", "2024-01-01T12:00:00Z", center, 10000.0, 450.0, 0.0, 180.0, 175.0);
-    computeData.handleTrackUpdate(track2);
-    result = computeData.collectProcessingResult();
-
-    sectorSummary0 = findSectorSummary(result, 0);
-    REQUIRE(sectorSummary0->getState() == SectorState::CONGESTED); // 2 aircraft + severe weather
-
-    Position center2 = grid.sectorCenter(1);
-    // Flight moves to another sector
-    Track track3("FLIGHT2", "2024-01-01T12:00:01Z", center2, 10000.0, 450.0, 0.0, 180.0, 175.0);
-    computeData.handleTrackUpdate(track3);
-    result = computeData.collectProcessingResult();
-
-    REQUIRE(result.riskEvents[0].getMessage().find("de-escalated") != std::string::npos);
-    sectorSummary0 = findSectorSummary(result, 0);
-    REQUIRE(sectorSummary0->getState() ==
-            SectorState::AT_RISK); // Back to AT_RISK after losing 1 aircraft
-}
 
 TEST_CASE("Empty processing result on startup")
 {

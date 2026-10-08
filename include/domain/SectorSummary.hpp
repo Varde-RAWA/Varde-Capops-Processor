@@ -1,7 +1,6 @@
 #pragma once
 
 #include "domain/types/SectorState.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -10,7 +9,6 @@ class SectorSummary
 {
   public:
     SectorSummary(int sectorId, int row, int column, std::string timestamp, int localAircraftCount,
-                  WeatherSeverity weatherSeverity, double weatherFactor,
                   double localAircraftBaseCapacity, SectorState riskSeverity);
 
     // getters
@@ -21,8 +19,6 @@ class SectorSummary
     double getBaseCapacity() const;
     SectorState getState() const;
     double getEffectiveCapacity() const;
-    WeatherSeverity getWeatherSeverity() const;
-    double getWeatherFactor() const;
     std::vector<std::string> getIcao24List() const;
 
     // helpers
@@ -30,7 +26,6 @@ class SectorSummary
     void decreaseLocalAircraftCount();
     void updateState();
     void updateTime(std::string timestamp);
-    void updateWeather(WeatherSeverity weatherSeverity, double weatherFactor);
     bool isAtRisk();
     bool isCongested();
     void addIcao(const std::string &icao);
@@ -42,8 +37,6 @@ class SectorSummary
     int column_;
     std::string timestamp_;
     int localAircraftCount_ = 0;
-    WeatherSeverity weatherSeverity_;
-    double weatherFactor_;
     double localAircraftBaseCapacity_;
     SectorState riskSeverity_;
     std::vector<std::string> icao24List_;

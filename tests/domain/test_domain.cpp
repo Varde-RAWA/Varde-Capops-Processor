@@ -2,14 +2,12 @@
 #include "domain/RiskEvent.hpp"
 #include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
-#include "domain/WeatherCell.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/SectorState.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 // ============================================================================
-// DOMAIN TESTS - Track, WeatherCell, RiskEvent, SectorSummary
+// DOMAIN TESTS - Track, RiskEvent, SectorSummary
 // ============================================================================
 
 TEST_CASE("Track initialization and getters")
@@ -28,15 +26,6 @@ TEST_CASE("Track initialization and getters")
     REQUIRE(track.getGroundTrackDegrees() == 175.0);
 }
 
-TEST_CASE("WeatherCell creation and getters")
-{
-    WeatherCell weatherCell(5, "2024-01-01T12:00:00Z", WeatherSeverity::SEVERE);
-
-    REQUIRE(weatherCell.getSectorId() == 5);
-    REQUIRE(weatherCell.getTimestamp() == "2024-01-01T12:00:00Z");
-    REQUIRE(weatherCell.getWeatherSeverity() == WeatherSeverity::SEVERE);
-}
-
 TEST_CASE("RiskEvent creation and getters")
 {
     RiskEvent riskEvent(1, SectorState::AT_RISK, 3, "2024-01-01T12:00:00Z", "Test risk message");
@@ -50,8 +39,7 @@ TEST_CASE("RiskEvent creation and getters")
 
 TEST_CASE("SectorSummary initialization and aircraft count management")
 {
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, WeatherSeverity::OK, 1.0, 100.0,
-                          SectorState::NORMAL);
+    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, 100.0, SectorState::NORMAL);
 
     REQUIRE(summary.getSectorId() == 0);
     REQUIRE(summary.getRow() == 0);
@@ -69,22 +57,10 @@ TEST_CASE("SectorSummary initialization and aircraft count management")
     REQUIRE(summary.getLocalAircraftCount() == 1);
 }
 
-TEST_CASE("SectorSummary weather update")
-{
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, WeatherSeverity::OK, 1.0, 100.0,
-                          SectorState::NORMAL);
-
-    REQUIRE(summary.getWeatherSeverity() == WeatherSeverity::OK);
-
-    summary.updateWeather(WeatherSeverity::SEVERE, 0.6);
-    REQUIRE(summary.getWeatherSeverity() == WeatherSeverity::SEVERE);
-    REQUIRE(summary.getWeatherFactor() == 0.6);
-}
 
 TEST_CASE("SectorSummary timestamp update")
 {
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, WeatherSeverity::OK, 1.0, 100.0,
-                          SectorState::NORMAL);
+    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, 100.0, SectorState::NORMAL);
 
     // updateTime modifies internal state, verify by checking no exception is thrown
     summary.updateTime("2024-01-01T12:01:00Z");

@@ -7,7 +7,6 @@
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include "domain/types/SectorState.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include "proto/FlightData.pb.h"
 #include "publish/ProtoMapper.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -38,12 +37,10 @@ TEST_CASE("Protobuf serialization round-trip")
     originalResult.riskEvents.push_back(riskEvent1);
 
     // Add sector summaries
-    SectorSummary summary1(0, 0, 0, "2024-01-01T12:00:00Z", 1, WeatherSeverity::OK, 1.0, 100.0,
-                           SectorState::NORMAL);
+    SectorSummary summary1(0, 0, 0, "2024-01-01T12:00:00Z", 1, 100.0, SectorState::NORMAL);
     originalResult.sectorSummaries.push_back(summary1);
 
-    SectorSummary summary2(1, 0, 1, "2024-01-01T12:00:00Z", 0, WeatherSeverity::SEVERE, 0.6, 100.0,
-                           SectorState::AT_RISK);
+    SectorSummary summary2(1, 0, 1, "2024-01-01T12:00:00Z", 0, 100.0, SectorState::AT_RISK);
     originalResult.sectorSummaries.push_back(summary2);
 
     // Serialize to protobuf
@@ -106,7 +103,6 @@ TEST_CASE("Protobuf serialization round-trip")
     REQUIRE(summaryProto1.sectorid() == 0);
     REQUIRE(summaryProto1.row() == 0);
     REQUIRE(summaryProto1.column() == 0);
-    REQUIRE(summaryProto1.weatherseverity() == "OK");
     REQUIRE(summaryProto1.riskseverity() == "NORMAL");
     REQUIRE(summaryProto1.localaircraftcount() == 1);
     REQUIRE(summaryProto1.localaircraftbasecapacity() == 100);
@@ -115,9 +111,8 @@ TEST_CASE("Protobuf serialization round-trip")
     const SectorSummaryProto &summaryProto2 =
         deserializedProto.sectorsummarydata().sectorsummaries(1);
     REQUIRE(summaryProto2.sectorid() == 1);
-    REQUIRE(summaryProto2.weatherseverity() == "SEVERE");
     REQUIRE(summaryProto2.riskseverity() == "AT_RISK");
-    REQUIRE(summaryProto2.localaircrafteffectivecapacity() == 60); // 100 * 0.6
+    REQUIRE(summaryProto2.localaircrafteffectivecapacity() == 100);
 }
 
 TEST_CASE("Protobuf serialization with empty result")

@@ -2,12 +2,10 @@
 #include <algorithm>
 
 SectorSummary::SectorSummary(int sectorId, int row, int column, std::string timestamp,
-                             int localAircraftCount, WeatherSeverity weatherSeverity,
-                             double weatherFactor, double localAircraftBaseCapacity,
+                             int localAircraftCount,double localAircraftBaseCapacity,
                              SectorState riskSeverity)
     : sectorId_(sectorId), row_(row), column_(column), timestamp_(std::move(timestamp)),
-      localAircraftCount_(localAircraftCount), weatherSeverity_(weatherSeverity),
-      weatherFactor_(weatherFactor), localAircraftBaseCapacity_(localAircraftBaseCapacity),
+      localAircraftCount_(localAircraftCount), localAircraftBaseCapacity_(localAircraftBaseCapacity),
       riskSeverity_(riskSeverity)
 {
 }
@@ -49,7 +47,7 @@ SectorState SectorSummary::getState() const
 
 double SectorSummary::getEffectiveCapacity() const
 {
-    return localAircraftBaseCapacity_ * weatherFactor_;
+    return localAircraftBaseCapacity_;
 }
 
 void SectorSummary::decreaseLocalAircraftCount()
@@ -58,11 +56,6 @@ void SectorSummary::decreaseLocalAircraftCount()
     {
         localAircraftCount_--;
     }
-}
-
-WeatherSeverity SectorSummary::getWeatherSeverity() const
-{
-    return weatherSeverity_;
 }
 
 bool SectorSummary::isAtRisk()
@@ -102,17 +95,6 @@ void SectorSummary::updateState()
 void SectorSummary::updateTime(std::string timestamp)
 {
     timestamp_ = std::move(timestamp);
-}
-
-void SectorSummary::updateWeather(WeatherSeverity weatherSeverity, double weatherFactor)
-{
-    weatherSeverity_ = weatherSeverity;
-    weatherFactor_ = weatherFactor;
-}
-
-double SectorSummary::getWeatherFactor() const
-{
-    return weatherFactor_;
 }
 
 void SectorSummary::addIcao(const std::string &icao)

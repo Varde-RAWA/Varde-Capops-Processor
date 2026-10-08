@@ -2,7 +2,6 @@
 #include "domain/RiskEvent.hpp"
 #include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
-#include "domain/WeatherCell.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include <deque>
@@ -71,8 +70,6 @@ void ComputeData::initializeSectors()
             sectorId, SectorSummary(sectorId, grid_.row(sectorId), grid_.column(sectorId),
                                     "", // timestamp
                                     0,  // localAircraftCount
-                                    WeatherSeverity::OK,
-                                    1.0, // weatherFactor
                                     config_.defaultBaseCapacity(), SectorState::NORMAL));
     }
 }
@@ -142,19 +139,6 @@ void ComputeData::handleTrackUpdate(const Track &newTrack)
         evaluateSectorState(newSectorId, time);
         activeTracksByIcao_.insert({newTrack.getIcao(), newTrack});
     }
-}
-
-void ComputeData::handleWeatherUpdate(const WeatherCell &weatherCell)
-{
-
-    int sectorId = weatherCell.getSectorId();
-    WeatherSeverity severity = weatherCell.getWeatherSeverity();
-    double factor = config_.weatherFactor(severity);
-    SectorSummary &summary = sectorSummariesById_.at(sectorId);
-
-    summary.updateWeather(weatherCell.getWeatherSeverity(), factor);
-
-    evaluateSectorState(sectorId, weatherCell.getTimestamp());
 }
 
 void ComputeData::evaluateSectorState(int sectorId, const std::string &timestamp)

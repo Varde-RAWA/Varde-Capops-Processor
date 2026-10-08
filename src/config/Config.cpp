@@ -47,11 +47,6 @@ double Configuration::defaultBaseCapacity() const
     return defaultBaseCapacity_;
 }
 
-double Configuration::weatherFactor(WeatherSeverity severity) const
-{
-    return weatherFactors_.at(severity);
-}
-
 void Configuration::load(const std::string &path)
 {
     std::ifstream file(path);
@@ -108,17 +103,6 @@ void Configuration::load(const std::string &path)
         {
             if (key == "defaultBaseCapacity")
                 defaultBaseCapacity_ = std::stod(value);
-        }
-        else if (currentSection == "weatherFactors")
-        {
-            if (key == "OK")
-                weatherFactors_[WeatherSeverity::OK] = std::stod(value);
-            else if (key == "DEGRADED")
-                weatherFactors_[WeatherSeverity::DEGRADED] = std::stod(value);
-            else if (key == "SEVERE")
-                weatherFactors_[WeatherSeverity::SEVERE] = std::stod(value);
-            else if (key == "EXTREME")
-                weatherFactors_[WeatherSeverity::EXTREME] = std::stod(value);
         }
         else if (currentSection == "protobufVersion")
         {
@@ -200,16 +184,6 @@ double Configuration::getTimestepSize() const
     return timestepSize_;
 }
 
-std::vector<std::pair<WeatherSeverity, double>> Configuration::getSortedWeatherLevels() const
-{
-    std::vector<std::pair<WeatherSeverity, double>> levels(weatherFactors_.begin(),
-                                                           weatherFactors_.end());
-
-    std::sort(levels.begin(), levels.end(),
-              [](const auto &a, const auto &b) { return a.second < b.second; });
-
-    return levels;
-}
 
 void GridConfig::computeDimensions()
 {

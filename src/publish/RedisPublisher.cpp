@@ -40,7 +40,6 @@ void RedisPublisher::publish(const ProcessingResult &result)
     // {
     //     std::cout << "  Sector " << sector.getSectorId()
     //               << " | aircraft=" << sector.getLocalAircraftCount()
-    //               << " | weather=" << weatherSeverityToString(sector.getWeatherSeverity())
     //               << " | state=" << sectorStateToString(sector.getState()) << "\n";
     // }
 
