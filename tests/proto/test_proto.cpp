@@ -31,10 +31,10 @@ TEST_CASE("Protobuf serialization round-trip")
     originalResult.tracks.push_back(track2);
 
     // Add sector summaries
-    SectorSummary summary1(0, 0, 0, "2024-01-01T12:00:00Z", 1);
+    SectorSummary summary1(0, 0, 0, "2024-01-01T12:00:00Z");
     originalResult.sectorSummaries.push_back(summary1);
 
-    SectorSummary summary2(1, 0, 1, "2024-01-01T12:00:00Z", 0);
+    SectorSummary summary2(1, 0, 1, "2024-01-01T12:00:00Z");
     originalResult.sectorSummaries.push_back(summary2);
 
     // Serialize to protobuf
@@ -85,7 +85,6 @@ TEST_CASE("Protobuf serialization round-trip")
     REQUIRE(summaryProto1.sectorid() == 0);
     REQUIRE(summaryProto1.row() == 0);
     REQUIRE(summaryProto1.column() == 0);
-    REQUIRE(summaryProto1.localaircraftcount() == 1);
 
     const SectorSummaryProto &summaryProto2 =
         deserializedProto.sectorsummarydata().sectorsummaries(1);

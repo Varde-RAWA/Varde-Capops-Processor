@@ -1,10 +1,8 @@
 #include "domain/SectorSummary.hpp"
 #include <algorithm>
 
-SectorSummary::SectorSummary(int sectorId, int row, int column, std::string timestamp,
-                             int localAircraftCount)
-    : sectorId_(sectorId), row_(row), column_(column), timestamp_(std::move(timestamp)),
-      localAircraftCount_(localAircraftCount){}
+SectorSummary::SectorSummary(int sectorId, int row, int column, std::string timestamp)
+    : sectorId_(sectorId), row_(row), column_(column), timestamp_(std::move(timestamp)){}
 
 int SectorSummary::getSectorId() const
 {
@@ -19,25 +17,6 @@ int SectorSummary::getRow() const
 int SectorSummary::getColumn() const
 {
     return column_;
-}
-
-int SectorSummary::getLocalAircraftCount() const
-{
-    return localAircraftCount_;
-}
-
-
-void SectorSummary::increaseLocalAircraftCount()
-{
-    localAircraftCount_++;
-}
-
-void SectorSummary::decreaseLocalAircraftCount()
-{
-    if (localAircraftCount_ > 0)
-    {
-        localAircraftCount_--;
-    }
 }
 
 

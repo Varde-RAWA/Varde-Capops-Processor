@@ -99,7 +99,6 @@ TEST_CASE("Track removal when aircraft leaves grid")
     ProcessingResult result1 = computeData.collectProcessingResult();
     auto sectorSummary0 = findSectorSummary(result1, 0);
     REQUIRE(result1.tracks.size() == 1);
-    REQUIRE(sectorSummary0->getLocalAircraftCount() == 1);
 
     Position pos2 = grid.sectorCenter(5);
     Track track2("ABC123", "2024-01-01T12:00:01Z", pos2, 10050.0, 450.0, 0.0, 180.0, 175.0);
@@ -111,8 +110,6 @@ TEST_CASE("Track removal when aircraft leaves grid")
 
     REQUIRE(result2.tracks.size() == 1);
     REQUIRE(result2.tracks[0].getPosition().latDeg == pos2.latDeg);
-    REQUIRE(sectorSummary0->getLocalAircraftCount() == 0);
-    REQUIRE(sectorSummary5->getLocalAircraftCount() == 1);
 
     Position pos3{10, 10};
     Track track3("ABC123", "2024-01-01T12:00:01Z", pos3, 10050.0, 450.0, 0.0, 180.0, 175.0);
@@ -121,7 +118,6 @@ TEST_CASE("Track removal when aircraft leaves grid")
     ProcessingResult result3 = computeData.collectProcessingResult();
     sectorSummary5 = findSectorSummary(result3, 5);
 
-    REQUIRE(sectorSummary5->getLocalAircraftCount() == 0);
     REQUIRE(result3.tracks.size() == 0);
 }
 
@@ -161,7 +157,6 @@ TEST_CASE("handleTrackUpdate replaces an aircraft snapshot without duplicating i
 
     auto sector = findSectorSummary(result, 0);
     REQUIRE(sector != result.sectorSummaries.end());
-    REQUIRE(sector->getLocalAircraftCount() == 1);
 
     auto identifiers = sector->getIcao24List();
     REQUIRE(identifiers.size() == 1);
@@ -221,12 +216,10 @@ TEST_CASE("handleTrackUpdate ignores older and equal-timestamp snapshots")
     REQUIRE(originalSector != result.sectorSummaries.end());
     REQUIRE(otherSector != result.sectorSummaries.end());
 
-    REQUIRE(originalSector->getLocalAircraftCount() == 1);
     auto identifiers = originalSector->getIcao24List();
     REQUIRE(identifiers.size() == 1);
     REQUIRE(identifiers[0] == "ABC123");
 
-    REQUIRE(otherSector->getLocalAircraftCount() == 0);
     REQUIRE(otherSector->getIcao24List().empty());
 }
 
@@ -252,12 +245,10 @@ TEST_CASE("handleTrackUpdate transfers aircraft between sectors")
     REQUIRE(firstSector != before.sectorSummaries.end());
     REQUIRE(secondSector != before.sectorSummaries.end());
 
-    REQUIRE(firstSector->getLocalAircraftCount() == 1);
     auto initialIds = firstSector->getIcao24List();
     REQUIRE(initialIds.size() == 1);
     REQUIRE(initialIds[0] == "ABC123");
 
-    REQUIRE(secondSector->getLocalAircraftCount() == 0);
     REQUIRE(secondSector->getIcao24List().empty());
 
     // Move the same aircraft to sector 5.
@@ -280,10 +271,8 @@ TEST_CASE("handleTrackUpdate transfers aircraft between sectors")
     REQUIRE(firstSector != after.sectorSummaries.end());
     REQUIRE(secondSector != after.sectorSummaries.end());
 
-    REQUIRE(firstSector->getLocalAircraftCount() == 0);
     REQUIRE(firstSector->getIcao24List().empty());
 
-    REQUIRE(secondSector->getLocalAircraftCount() == 1);
     auto movedIds = secondSector->getIcao24List();
     REQUIRE(movedIds.size() == 1);
     REQUIRE(movedIds[0] == "ABC123");
@@ -310,7 +299,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
 
     auto sector = findSectorSummary(before, 5);
     REQUIRE(sector != before.sectorSummaries.end());
-    REQUIRE(sector->getLocalAircraftCount() == 1);
 
     auto initialIds = sector->getIcao24List();
     REQUIRE(initialIds.size() == 1);
@@ -326,7 +314,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
 
     sector = findSectorSummary(afterDeparture, 5);
     REQUIRE(sector != afterDeparture.sectorSummaries.end());
-    REQUIRE(sector->getLocalAircraftCount() == 0);
     REQUIRE(sector->getIcao24List().empty());
 
     Track stillOutside("ABC123", "2024-01-01T12:00:02Z",
@@ -339,7 +326,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
 
     sector = findSectorSummary(absent, 5);
     REQUIRE(sector != absent.sectorSummaries.end());
-    REQUIRE(sector->getLocalAircraftCount() == 0);
     REQUIRE(sector->getIcao24List().empty());
 
     Track returned("ABC123", "2024-01-01T12:00:03Z",
@@ -358,7 +344,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
 
     sector = findSectorSummary(afterReturn, 5);
     REQUIRE(sector != afterReturn.sectorSummaries.end());
-    REQUIRE(sector->getLocalAircraftCount() == 1);
 
     auto returnedIds = sector->getIcao24List();
     REQUIRE(returnedIds.size() == 1);

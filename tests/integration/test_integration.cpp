@@ -41,9 +41,10 @@ TEST_CASE("Track updates generate aircraft and sector results")
 
     REQUIRE(result.tracks.size() == 5);
     REQUIRE(result.sectorSummaries.size() == config.grid().rows * config.grid().cols);
-    REQUIRE(sectorSummary0->getLocalAircraftCount() == 5);
+    REQUIRE(sectorSummary0 != result.sectorSummaries.end());
+    REQUIRE(sectorSummary0->getIcao24List().size() == 5);
 }
-TEST_CASE("Aircraft counts are maintained across multiple sectors")
+TEST_CASE("Aircraft in different sectors are retained")
 {
     Configuration config = createTestConfig();
     ComputeData computeData(config);
@@ -64,11 +65,6 @@ TEST_CASE("Aircraft counts are maintained across multiple sectors")
     ProcessingResult result = computeData.collectProcessingResult();
 
     REQUIRE(result.tracks.size() == 12);
-    for (int i = 0; i < 4; ++i)
-    {
-        auto it = findSectorSummary(result, i);
-        REQUIRE(it->getLocalAircraftCount() == 3);
-    }
 }
 
 TEST_CASE("End-to-end: Simulated data is published to Redis")
@@ -189,7 +185,6 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
 
     auto sector = findSectorSummary(result, sectorId);
     REQUIRE(sector != result.sectorSummaries.end());
-    REQUIRE(sector->getLocalAircraftCount() == 1);
 
     auto identifiers = sector->getIcao24List();
     REQUIRE(identifiers.size() == 1);
@@ -220,7 +215,6 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
         if (summary.sectorid() == sectorId)
         {
             sectorFound = true;
-            REQUIRE(summary.localaircraftcount() == 1);
             REQUIRE(summary.icao24list_size() == 1);
             REQUIRE(summary.icao24list(0) == "SIM-0");
         }

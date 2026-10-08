@@ -12,7 +12,6 @@ SectorSummaryProto mapToProto(const SectorSummary &summary)
     proto.set_sectorid(summary.getSectorId());
     proto.set_row(summary.getRow());
     proto.set_column(summary.getColumn());
-    proto.set_localaircraftcount(summary.getLocalAircraftCount());
     for (const auto &icao : summary.getIcao24List())
     {
         proto.add_icao24list(icao);

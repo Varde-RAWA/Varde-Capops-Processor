@@ -26,27 +26,17 @@ TEST_CASE("Track initialization and getters")
 
 TEST_CASE("SectorSummary initialization and aircraft count management")
 {
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0);
+    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z");
 
     REQUIRE(summary.getSectorId() == 0);
     REQUIRE(summary.getRow() == 0);
     REQUIRE(summary.getColumn() == 0);
-    REQUIRE(summary.getLocalAircraftCount() == 0);
-
-    summary.increaseLocalAircraftCount();
-    REQUIRE(summary.getLocalAircraftCount() == 1);
-
-    summary.increaseLocalAircraftCount();
-    REQUIRE(summary.getLocalAircraftCount() == 2);
-
-    summary.decreaseLocalAircraftCount();
-    REQUIRE(summary.getLocalAircraftCount() == 1);
 }
 
 
 TEST_CASE("SectorSummary timestamp update")
 {
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0);
+    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z");
 
     // updateTime modifies internal state, verify by checking no exception is thrown
     summary.updateTime("2024-01-01T12:01:00Z");

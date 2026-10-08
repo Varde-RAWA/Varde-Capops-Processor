@@ -7,18 +7,15 @@
 class SectorSummary
 {
   public:
-    SectorSummary(int sectorId, int row, int column, std::string timestamp, int localAircraftCount);
+    SectorSummary(int sectorId, int row, int column, std::string timestamp);
 
     // getters
     int getSectorId() const;
     int getRow() const;
     int getColumn() const;
-    int getLocalAircraftCount() const;
     std::vector<std::string> getIcao24List() const;
 
     // helpers
-    void increaseLocalAircraftCount();
-    void decreaseLocalAircraftCount();
     void updateTime(std::string timestamp);
     void addIcao(const std::string &icao);
     void removeIcao(const std::string &icao);
@@ -28,6 +25,5 @@ class SectorSummary
     int row_;
     int column_;
     std::string timestamp_;
-    int localAircraftCount_ = 0;
     std::vector<std::string> icao24List_;
 };

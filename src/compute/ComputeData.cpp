@@ -20,10 +20,7 @@ void ComputeData::initializeSectors()
     for (int sectorId = 0; sectorId < grid_.sectorCount(); ++sectorId)
     {
         sectorSummariesById_.emplace(
-            sectorId, SectorSummary(sectorId, grid_.row(sectorId), grid_.column(sectorId),
-                                    "", // timestamp
-                                    0  // localAircraftCount
-                                    ));
+            sectorId, SectorSummary(sectorId, grid_.row(sectorId), grid_.column(sectorId), ""));
     }
 }
 
@@ -38,11 +35,6 @@ void ComputeData::removeTrack(std::string icao)
 
     const Track &track = currentTrack->second;
     int sectorId = grid_.determineSector(track.getPosition());
-
-    if (sectorId != -1)
-    {
-        sectorSummariesById_.at(sectorId).decreaseLocalAircraftCount();
-    }
 
     activeTracksByIcao_.erase(currentTrack);
     sectorSummariesById_.at(sectorId).removeIcao(icao);
@@ -71,10 +63,7 @@ void ComputeData::handleTrackUpdate(const Track &newTrack)
         int oldSectorId = grid_.determineSector(oldTrack.getPosition());
         if (oldSectorId != newSectorId)
         {
-            sectorSummariesById_.at(oldSectorId).decreaseLocalAircraftCount();
             sectorSummariesById_.at(oldSectorId).removeIcao(newTrack.getIcao());
-
-            sectorSummariesById_.at(newSectorId).increaseLocalAircraftCount();
             sectorSummariesById_.at(newSectorId).addIcao(newTrack.getIcao());
         }
         currentTrack->second = newTrack;
@@ -83,7 +72,6 @@ void ComputeData::handleTrackUpdate(const Track &newTrack)
     // new track
     else
     {
-        sectorSummariesById_.at(newSectorId).increaseLocalAircraftCount();
         sectorSummariesById_.at(newSectorId).addIcao(newTrack.getIcao());
         activeTracksByIcao_.insert({newTrack.getIcao(), newTrack});
     }
