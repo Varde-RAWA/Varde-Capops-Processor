@@ -1,24 +1,9 @@
 #include "publish/ProtoMapper.hpp"
 
-#include "domain/types/SectorState.hpp"
 #include "utils/time/IsoTimestamp.hpp"
 
 #include <string>
 
-RiskEventProto mapToProto(const RiskEvent &event)
-{
-    RiskEventProto proto;
-
-    proto.set_riskeventid(event.getRiskEventId());
-    proto.set_riskseverity(sectorStateToString(event.getState()));
-    proto.set_sectorid(event.getSectorId());
-    proto.set_createdtimestamp(event.getTimestamp());
-    proto.set_acknowledgedtimestamp("");
-    proto.set_message(event.getMessage());
-    proto.set_acknowledged(false);
-
-    return proto;
-}
 
 SectorSummaryProto mapToProto(const SectorSummary &summary)
 {
@@ -27,10 +12,7 @@ SectorSummaryProto mapToProto(const SectorSummary &summary)
     proto.set_sectorid(summary.getSectorId());
     proto.set_row(summary.getRow());
     proto.set_column(summary.getColumn());
-    proto.set_riskseverity(sectorStateToString(summary.getState()));
     proto.set_localaircraftcount(summary.getLocalAircraftCount());
-    proto.set_localaircraftbasecapacity(static_cast<int>(summary.getBaseCapacity()));
-    proto.set_localaircrafteffectivecapacity(static_cast<int>(summary.getEffectiveCapacity()));
     for (const auto &icao : summary.getIcao24List())
     {
         proto.add_icao24list(icao);
@@ -67,15 +49,6 @@ FlightDataProto mapToProto(const ProcessingResult &result, const Configuration &
     // Metadata
     proto.mutable_metadata()->set_version(config.getProtobufVersion());
     proto.mutable_metadata()->set_timestamp(createIsoTimestamp());
-
-    // Risk events
-    RiskEventDataProto *riskEventData = proto.mutable_riskeventdata();
-    riskEventData->set_riskeventcount(static_cast<int>(result.riskEvents.size()));
-
-    for (const auto &event : result.riskEvents)
-    {
-        *riskEventData->add_riskevents() = mapToProto(event);
-    }
 
     // Sector summaries
     SectorSummaryDataProto *sectorSummaryData = proto.mutable_sectorsummarydata();

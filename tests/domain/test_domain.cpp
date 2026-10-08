@@ -1,13 +1,11 @@
 #include "../test_helpers.hpp"
-#include "domain/RiskEvent.hpp"
 #include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
 #include "domain/types/Position.hpp"
-#include "domain/types/SectorState.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 // ============================================================================
-// DOMAIN TESTS - Track, RiskEvent, SectorSummary
+// DOMAIN TESTS - Track, SectorSummary
 // ============================================================================
 
 TEST_CASE("Track initialization and getters")
@@ -26,26 +24,14 @@ TEST_CASE("Track initialization and getters")
     REQUIRE(track.getGroundTrackDegrees() == 175.0);
 }
 
-TEST_CASE("RiskEvent creation and getters")
-{
-    RiskEvent riskEvent(1, SectorState::AT_RISK, 3, "2024-01-01T12:00:00Z", "Test risk message");
-
-    REQUIRE(riskEvent.getRiskEventId() == 1);
-    REQUIRE(riskEvent.getState() == SectorState::AT_RISK);
-    REQUIRE(riskEvent.getSectorId() == 3);
-    REQUIRE(riskEvent.getTimestamp() == "2024-01-01T12:00:00Z");
-    REQUIRE(riskEvent.getMessage() == "Test risk message");
-}
-
 TEST_CASE("SectorSummary initialization and aircraft count management")
 {
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, 100.0, SectorState::NORMAL);
+    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0);
 
     REQUIRE(summary.getSectorId() == 0);
     REQUIRE(summary.getRow() == 0);
     REQUIRE(summary.getColumn() == 0);
     REQUIRE(summary.getLocalAircraftCount() == 0);
-    REQUIRE(summary.getBaseCapacity() == 100.0);
 
     summary.increaseLocalAircraftCount();
     REQUIRE(summary.getLocalAircraftCount() == 1);
@@ -60,7 +46,7 @@ TEST_CASE("SectorSummary initialization and aircraft count management")
 
 TEST_CASE("SectorSummary timestamp update")
 {
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0, 100.0, SectorState::NORMAL);
+    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z", 0);
 
     // updateTime modifies internal state, verify by checking no exception is thrown
     summary.updateTime("2024-01-01T12:01:00Z");

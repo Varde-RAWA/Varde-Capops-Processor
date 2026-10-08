@@ -21,7 +21,6 @@ class Configuration
     explicit Configuration(const std::string &path);
 
     const GridConfig &grid() const;
-    double defaultBaseCapacity() const;
     void load(const std::string &path);
     int getProtobufVersion() const;
     std::string getCoordinateSystem() const;
@@ -34,7 +33,6 @@ class Configuration
 
   private:
     GridConfig grid_;
-    double defaultBaseCapacity_;
     int protobufVersion_;
     std::string coordinateSystem_;
     std::string redisUrl_;

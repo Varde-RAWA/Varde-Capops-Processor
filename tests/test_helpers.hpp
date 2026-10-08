@@ -50,9 +50,6 @@ inline Configuration createTestConfig()
     configFile << "cellSizeDeg=0.1\n";
     configFile << "coordinateSystem=WGS84\n";
     configFile << "\n";
-    configFile << "[capacity]\n";
-    configFile << "defaultBaseCapacity=1\n";
-    configFile << "\n";
     configFile << "[protobufVersion]\n";
     configFile << "version=1\n";
     configFile << "\n";
@@ -93,9 +90,6 @@ inline Configuration createTestConfigApi()
     configFile << "rows=3\n";
     configFile << "cols=3\n";
     configFile << "coordinateSystem=WGS84\n";
-    configFile << "\n";
-    configFile << "[capacity]\n";
-    configFile << "defaultBaseCapacity=1\n";
     configFile << "\n";
     configFile << "[protobufVersion]\n";
     configFile << "version=1\n";

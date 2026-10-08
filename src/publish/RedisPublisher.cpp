@@ -36,21 +36,6 @@ void RedisPublisher::publish(const ProcessingResult &result)
     // // Sector summaries
     // std::cout << "\nSectors:\n";
 
-    // for (const auto &sector : result.sectorSummaries)
-    // {
-    //     std::cout << "  Sector " << sector.getSectorId()
-    //               << " | aircraft=" << sector.getLocalAircraftCount()
-    //               << " | state=" << sectorStateToString(sector.getState()) << "\n";
-    // }
-
-    // // Risk events
-    // std::cout << "\nRiskEvents (" << result.riskEvents.size() << "):\n";
-
-    // for (const auto &event : result.riskEvents)
-    // {
-    //     std::cout << "  " << event.getMessage() << "\n";
-    // }
-
     // std::cout << "----------------------\n";
 
     redis_.publish(channel_, serialized);

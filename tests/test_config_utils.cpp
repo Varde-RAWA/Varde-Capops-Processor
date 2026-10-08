@@ -15,7 +15,6 @@ TEST_CASE("Configuration loads default values")
     REQUIRE(config.getProtobufVersion() == 1);
     REQUIRE(config.getCoordinateSystem() == "WGS84");
     REQUIRE(config.getNumFlights() == 3);
-    REQUIRE(config.defaultBaseCapacity() == 1.0);
 }
 
 TEST_CASE("Loads a complete configuration")

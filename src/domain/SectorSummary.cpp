@@ -2,13 +2,9 @@
 #include <algorithm>
 
 SectorSummary::SectorSummary(int sectorId, int row, int column, std::string timestamp,
-                             int localAircraftCount,double localAircraftBaseCapacity,
-                             SectorState riskSeverity)
+                             int localAircraftCount)
     : sectorId_(sectorId), row_(row), column_(column), timestamp_(std::move(timestamp)),
-      localAircraftCount_(localAircraftCount), localAircraftBaseCapacity_(localAircraftBaseCapacity),
-      riskSeverity_(riskSeverity)
-{
-}
+      localAircraftCount_(localAircraftCount){}
 
 int SectorSummary::getSectorId() const
 {
@@ -30,24 +26,10 @@ int SectorSummary::getLocalAircraftCount() const
     return localAircraftCount_;
 }
 
-double SectorSummary::getBaseCapacity() const
-{
-    return localAircraftBaseCapacity_;
-}
 
 void SectorSummary::increaseLocalAircraftCount()
 {
     localAircraftCount_++;
-}
-
-SectorState SectorSummary::getState() const
-{
-    return riskSeverity_;
-}
-
-double SectorSummary::getEffectiveCapacity() const
-{
-    return localAircraftBaseCapacity_;
 }
 
 void SectorSummary::decreaseLocalAircraftCount()
@@ -58,39 +40,7 @@ void SectorSummary::decreaseLocalAircraftCount()
     }
 }
 
-bool SectorSummary::isAtRisk()
-{
-    if (localAircraftCount_ > getEffectiveCapacity())
-    {
-        return true;
-    }
-    return false;
-}
 
-bool SectorSummary::isCongested()
-{
-    if (localAircraftCount_ > localAircraftBaseCapacity_)
-    {
-        return true;
-    }
-    return false;
-}
-
-void SectorSummary::updateState()
-{
-    if (isCongested())
-    {
-        riskSeverity_ = SectorState::CONGESTED;
-    }
-    else if (isAtRisk())
-    {
-        riskSeverity_ = SectorState::AT_RISK;
-    }
-    else
-    {
-        riskSeverity_ = SectorState::NORMAL;
-    }
-}
 
 void SectorSummary::updateTime(std::string timestamp)
 {

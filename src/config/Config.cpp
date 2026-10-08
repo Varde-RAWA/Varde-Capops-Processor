@@ -42,11 +42,6 @@ const GridConfig &Configuration::grid() const
     return grid_;
 }
 
-double Configuration::defaultBaseCapacity() const
-{
-    return defaultBaseCapacity_;
-}
-
 void Configuration::load(const std::string &path)
 {
     std::ifstream file(path);
@@ -98,11 +93,6 @@ void Configuration::load(const std::string &path)
 
             else if (key == "coordinateSystem")
                 coordinateSystem_ = value;
-        }
-        else if (currentSection == "capacity")
-        {
-            if (key == "defaultBaseCapacity")
-                defaultBaseCapacity_ = std::stod(value);
         }
         else if (currentSection == "protobufVersion")
         {

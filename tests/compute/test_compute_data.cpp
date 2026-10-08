@@ -5,7 +5,6 @@
 #include "domain/Track.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
-#include "domain/types/SectorState.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 // ============================================================================
@@ -20,7 +19,6 @@ TEST_CASE("ComputeData initialization with sectors")
     // Initially, there should be no tracks and no pending risk events
     ProcessingResult result = computeData.collectProcessingResult();
     REQUIRE(result.tracks.empty());
-    REQUIRE(result.riskEvents.empty());
     REQUIRE(result.sectorSummaries.size() == config.grid().rows * config.grid().cols); // 3x3 = 9
 }
 
@@ -85,7 +83,6 @@ TEST_CASE("Empty processing result on startup")
     ProcessingResult result = computeData.collectProcessingResult();
 
     REQUIRE(result.tracks.empty());
-    REQUIRE(result.riskEvents.empty());
     REQUIRE(result.sectorSummaries.size() > 0);
 }
 
@@ -231,7 +228,6 @@ TEST_CASE("handleTrackUpdate ignores older and equal-timestamp snapshots")
 
     REQUIRE(otherSector->getLocalAircraftCount() == 0);
     REQUIRE(otherSector->getIcao24List().empty());
-    REQUIRE(result.riskEvents.empty());
 }
 
 TEST_CASE("handleTrackUpdate transfers aircraft between sectors")
