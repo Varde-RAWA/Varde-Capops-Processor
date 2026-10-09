@@ -52,7 +52,12 @@ void ProcessorApp::initializeSources(const Configuration &config)
     if (simulationMode_)
     {
         radarSimulator_ = std::make_unique<RadarSimulator>(config.grid());
-        radarSimulator_->initializeFlights(config.getNumFlights());
+        ///radarSimulator_->initializeFlights(config.getNumFlights());
+        radarSimulator_->initializeFlights(
+        {{60.0, 4.6}},
+        {{60.0, 5.6}},
+        {360.0 * 1852.0 / 3600.0} 
+        );
 
         trackSource_ = std::make_unique<TrackSourceSimulated>(*radarSimulator_);
         return;
