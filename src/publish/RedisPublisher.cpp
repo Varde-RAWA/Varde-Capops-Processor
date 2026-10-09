@@ -2,14 +2,12 @@
 #include "publish/ProtoMapper.hpp"
 
 RedisPublisher::RedisPublisher(const Configuration &config)
-    : config_(config), redis_(config.getRedisUrl()), channel_(config.getRedisChannel()),
-      grid_(config_.grid())
-{
-}
+    : config_(config), redis_(config.getRedisUrl()),
+      channel_(config.getRedisChannel()){}
 
 void RedisPublisher::publish(const ProcessingResult &result)
 {
-    FlightDataProto proto = mapToProto(result, config_, grid_);
+    FlightDataProto proto = mapToProto(result, config_);
 
     std::string serialized;
     bool ok = proto.SerializeToString(&serialized);
@@ -33,8 +31,6 @@ void RedisPublisher::publish(const ProcessingResult &result)
     //               << " time=" << track.getTimestamp() << "\n";
     // }
 
-    // // Sector summaries
-    // std::cout << "\nSectors:\n";
 
     // std::cout << "----------------------\n";
 

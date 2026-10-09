@@ -1,11 +1,10 @@
 #include "../test_helpers.hpp"
-#include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
 #include "domain/types/Position.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 // ============================================================================
-// DOMAIN TESTS - Track, SectorSummary
+// DOMAIN TESTS - Track
 // ============================================================================
 
 TEST_CASE("Track initialization and getters")
@@ -22,23 +21,4 @@ TEST_CASE("Track initialization and getters")
     REQUIRE(track.getVerticalSpeedFeetPerMinute() == 100.0);
     REQUIRE(track.getHeadingDegrees() == 180.0);
     REQUIRE(track.getGroundTrackDegrees() == 175.0);
-}
-
-TEST_CASE("SectorSummary initialization and aircraft count management")
-{
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z");
-
-    REQUIRE(summary.getSectorId() == 0);
-    REQUIRE(summary.getRow() == 0);
-    REQUIRE(summary.getColumn() == 0);
-}
-
-
-TEST_CASE("SectorSummary timestamp update")
-{
-    SectorSummary summary(0, 0, 0, "2024-01-01T12:00:00Z");
-
-    // updateTime modifies internal state, verify by checking no exception is thrown
-    summary.updateTime("2024-01-01T12:01:00Z");
-    REQUIRE(true); // If we get here, update succeeded
 }

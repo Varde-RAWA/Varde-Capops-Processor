@@ -5,20 +5,6 @@
 #include <string>
 
 
-SectorSummaryProto mapToProto(const SectorSummary &summary)
-{
-    SectorSummaryProto proto;
-
-    proto.set_sectorid(summary.getSectorId());
-    proto.set_row(summary.getRow());
-    proto.set_column(summary.getColumn());
-    for (const auto &icao : summary.getIcao24List())
-    {
-        proto.add_icao24list(icao);
-    }
-    return proto;
-}
-
 TrackProto mapToProto(const Track &track)
 {
     TrackProto proto;
@@ -40,28 +26,14 @@ TrackProto mapToProto(const Track &track)
     return proto;
 }
 
-FlightDataProto mapToProto(const ProcessingResult &result, const Configuration &config,
-                           const GridConfig &grid)
+FlightDataProto mapToProto(const ProcessingResult &result,
+                           const Configuration &config)
 {
     FlightDataProto proto;
 
     // Metadata
     proto.mutable_metadata()->set_version(config.getProtobufVersion());
     proto.mutable_metadata()->set_timestamp(createIsoTimestamp());
-
-    // Sector summaries
-    SectorSummaryDataProto *sectorSummaryData = proto.mutable_sectorsummarydata();
-    sectorSummaryData->set_rowscount(grid.rows);
-    sectorSummaryData->set_columnscount(grid.cols);
-    sectorSummaryData->set_minlongitude(grid.minLon);
-    sectorSummaryData->set_maxlongitude(grid.maxLon);
-    sectorSummaryData->set_minlatitude(grid.minLat);
-    sectorSummaryData->set_maxlatitude(grid.maxLat);
-
-    for (const auto &summary : result.sectorSummaries)
-    {
-        *sectorSummaryData->add_sectorsummaries() = mapToProto(summary);
-    }
 
     // Tracks
     TrackDataProto *trackData = proto.mutable_trackdata();

@@ -1,5 +1,4 @@
 #include "compute/ComputeData.hpp"
-#include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
@@ -10,34 +9,12 @@
 
 
 ComputeData::ComputeData(const Configuration &configuration)
-    : config_(configuration), grid_(configuration.grid())
-{
-    initializeSectors();
-}
-
-void ComputeData::initializeSectors()
-{
-    for (int sectorId = 0; sectorId < grid_.sectorCount(); ++sectorId)
-    {
-        sectorSummariesById_.emplace(
-            sectorId, SectorSummary(sectorId, grid_.row(sectorId), grid_.column(sectorId), ""));
-    }
-}
+    : grid_(configuration.grid())
+{}
 
 void ComputeData::removeTrack(std::string icao)
 {
-    auto currentTrack = activeTracksByIcao_.find(icao);
-
-    if (currentTrack == activeTracksByIcao_.end())
-    {
-        return;
-    }
-
-    const Track &track = currentTrack->second;
-    int sectorId = grid_.determineSector(track.getPosition());
-
-    activeTracksByIcao_.erase(currentTrack);
-    sectorSummariesById_.at(sectorId).removeIcao(icao);
+    activeTracksByIcao_.erase(icao);
 }
 
 void ComputeData::handleTrackUpdate(const Track &newTrack)
@@ -60,19 +37,12 @@ void ComputeData::handleTrackUpdate(const Track &newTrack)
         {
             return;
         }
-        int oldSectorId = grid_.determineSector(oldTrack.getPosition());
-        if (oldSectorId != newSectorId)
-        {
-            sectorSummariesById_.at(oldSectorId).removeIcao(newTrack.getIcao());
-            sectorSummariesById_.at(newSectorId).addIcao(newTrack.getIcao());
-        }
         currentTrack->second = newTrack;
     }
 
     // new track
     else
     {
-        sectorSummariesById_.at(newSectorId).addIcao(newTrack.getIcao());
         activeTracksByIcao_.insert({newTrack.getIcao(), newTrack});
     }
 }
@@ -85,11 +55,6 @@ ProcessingResult ComputeData::collectProcessingResult()
     for (const auto &[icao, track] : activeTracksByIcao_)
     {
         result.tracks.push_back(track);
-    }
-
-    for (const auto &[sectorId, summary] : sectorSummariesById_)
-    {
-        result.sectorSummaries.push_back(summary);
     }
 
     return result;

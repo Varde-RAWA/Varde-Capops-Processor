@@ -2,7 +2,6 @@
 #define TEST_HELPERS_HPP
 
 #include "config/Config.hpp"
-#include "domain/SectorSummary.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include <algorithm>
 #include <cstdio>
@@ -114,13 +113,6 @@ inline Configuration createTestConfigApi()
     std::remove(configPath.c_str());
 
     return config;
-}
-
-// Helper function to find a sector summary by ID
-static auto findSectorSummary(const ProcessingResult &result, int sectorId)
-{
-    return std::find_if(result.sectorSummaries.begin(), result.sectorSummaries.end(),
-                        [sectorId](const SectorSummary &s) { return s.getSectorId() == sectorId; });
 }
 
 #endif // TEST_HELPERS_HPP

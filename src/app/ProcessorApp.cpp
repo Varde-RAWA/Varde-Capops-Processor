@@ -1,7 +1,6 @@
 #include "app/ProcessorApp.hpp"
 
 #include "compute/ComputeData.hpp"
-#include "compute/Grid.hpp"
 #include "config/Config.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include "ingest/IngestService.hpp"
@@ -25,7 +24,6 @@ ProcessorApp::~ProcessorApp() = default;
 void ProcessorApp::run()
 {
     Configuration config("configuration.cfg");
-    Grid grid(config.grid());
 
     initializeSources(config);
 

@@ -11,15 +11,14 @@
 // COMPUTEDATA TESTS - Main processing logic
 // ============================================================================
 
-TEST_CASE("ComputeData initialization with sectors")
+TEST_CASE("ComputeData initialization without aircraft")
 {
     Configuration config = createTestConfig();
     ComputeData computeData(config);
 
-    // Initially, there should be no tracks and no pending risk events
+    // Initially, there should be no tracks
     ProcessingResult result = computeData.collectProcessingResult();
     REQUIRE(result.tracks.empty());
-    REQUIRE(result.sectorSummaries.size() == config.grid().rows * config.grid().cols); // 3x3 = 9
 }
 
 TEST_CASE("ComputeData handles track update")
@@ -83,7 +82,6 @@ TEST_CASE("Empty processing result on startup")
     ProcessingResult result = computeData.collectProcessingResult();
 
     REQUIRE(result.tracks.empty());
-    REQUIRE(result.sectorSummaries.size() > 0);
 }
 
 TEST_CASE("Track removal when aircraft leaves grid")
@@ -97,7 +95,6 @@ TEST_CASE("Track removal when aircraft leaves grid")
     computeData.handleTrackUpdate(track1);
 
     ProcessingResult result1 = computeData.collectProcessingResult();
-    auto sectorSummary0 = findSectorSummary(result1, 0);
     REQUIRE(result1.tracks.size() == 1);
 
     Position pos2 = grid.sectorCenter(5);
@@ -105,8 +102,6 @@ TEST_CASE("Track removal when aircraft leaves grid")
     computeData.handleTrackUpdate(track2);
 
     ProcessingResult result2 = computeData.collectProcessingResult();
-    sectorSummary0 = findSectorSummary(result2, 0);
-    auto sectorSummary5 = findSectorSummary(result2, 5);
 
     REQUIRE(result2.tracks.size() == 1);
     REQUIRE(result2.tracks[0].getPosition().latDeg == pos2.latDeg);
@@ -116,7 +111,6 @@ TEST_CASE("Track removal when aircraft leaves grid")
     computeData.handleTrackUpdate(track3);
 
     ProcessingResult result3 = computeData.collectProcessingResult();
-    sectorSummary5 = findSectorSummary(result3, 5);
 
     REQUIRE(result3.tracks.size() == 0);
 }
@@ -154,13 +148,6 @@ TEST_CASE("handleTrackUpdate replaces an aircraft snapshot without duplicating i
     REQUIRE(result.tracks[0].getAltitudeFeet() == 10050.0);
     REQUIRE(result.tracks[0].getPosition().latDeg == secondPosition.latDeg);
     REQUIRE(result.tracks[0].getPosition().lonDeg == secondPosition.lonDeg);
-
-    auto sector = findSectorSummary(result, 0);
-    REQUIRE(sector != result.sectorSummaries.end());
-
-    auto identifiers = sector->getIcao24List();
-    REQUIRE(identifiers.size() == 1);
-    REQUIRE(identifiers[0] == "ABC123");
 }
 
 TEST_CASE("handleTrackUpdate ignores older and equal-timestamp snapshots")
@@ -209,21 +196,9 @@ TEST_CASE("handleTrackUpdate ignores older and equal-timestamp snapshots")
             original.getVerticalSpeedFeetPerMinute());
     REQUIRE(stored.getHeadingDegrees() == original.getHeadingDegrees());
     REQUIRE(stored.getGroundTrackDegrees() == original.getGroundTrackDegrees());
-
-    auto originalSector = findSectorSummary(result, 0);
-    auto otherSector = findSectorSummary(result, 1);
-
-    REQUIRE(originalSector != result.sectorSummaries.end());
-    REQUIRE(otherSector != result.sectorSummaries.end());
-
-    auto identifiers = originalSector->getIcao24List();
-    REQUIRE(identifiers.size() == 1);
-    REQUIRE(identifiers[0] == "ABC123");
-
-    REQUIRE(otherSector->getIcao24List().empty());
 }
 
-TEST_CASE("handleTrackUpdate transfers aircraft between sectors")
+TEST_CASE("handleTrackUpdate updates aircraft position within the region")
 {
     Configuration config = createTestConfig();
     ComputeData computeData(config);
@@ -237,19 +212,9 @@ TEST_CASE("handleTrackUpdate transfers aircraft between sectors")
 
     computeData.handleTrackUpdate(first);
 
-    // Verify initial membership.
     ProcessingResult before = computeData.collectProcessingResult();
-    auto firstSector = findSectorSummary(before, 0);
-    auto secondSector = findSectorSummary(before, 5);
-
-    REQUIRE(firstSector != before.sectorSummaries.end());
-    REQUIRE(secondSector != before.sectorSummaries.end());
-
-    auto initialIds = firstSector->getIcao24List();
-    REQUIRE(initialIds.size() == 1);
-    REQUIRE(initialIds[0] == "ABC123");
-
-    REQUIRE(secondSector->getIcao24List().empty());
+    REQUIRE(before.tracks.size() == 1);
+    REQUIRE(before.tracks[0].getIcao() == "ABC123");
 
     // Move the same aircraft to sector 5.
     Track moved("ABC123", "2024-01-01T12:00:01Z",
@@ -264,18 +229,6 @@ TEST_CASE("handleTrackUpdate transfers aircraft between sectors")
     REQUIRE(after.tracks[0].getTimestamp() == moved.getTimestamp());
     REQUIRE(after.tracks[0].getPosition().latDeg == secondPosition.latDeg);
     REQUIRE(after.tracks[0].getPosition().lonDeg == secondPosition.lonDeg);
-
-    firstSector = findSectorSummary(after, 0);
-    secondSector = findSectorSummary(after, 5);
-
-    REQUIRE(firstSector != after.sectorSummaries.end());
-    REQUIRE(secondSector != after.sectorSummaries.end());
-
-    REQUIRE(firstSector->getIcao24List().empty());
-
-    auto movedIds = secondSector->getIcao24List();
-    REQUIRE(movedIds.size() == 1);
-    REQUIRE(movedIds[0] == "ABC123");
 }
 
 TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them on re-entry")
@@ -297,13 +250,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
     ProcessingResult before = computeData.collectProcessingResult();
     REQUIRE(before.tracks.size() == 1);
 
-    auto sector = findSectorSummary(before, 5);
-    REQUIRE(sector != before.sectorSummaries.end());
-
-    auto initialIds = sector->getIcao24List();
-    REQUIRE(initialIds.size() == 1);
-    REQUIRE(initialIds[0] == "ABC123");
-
     Track departed("ABC123", "2024-01-01T12:00:01Z",
                    outside, 10000.0, 450.0, 0.0, 180.0, 175.0);
 
@@ -312,10 +258,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
     ProcessingResult afterDeparture = computeData.collectProcessingResult();
     REQUIRE(afterDeparture.tracks.empty());
 
-    sector = findSectorSummary(afterDeparture, 5);
-    REQUIRE(sector != afterDeparture.sectorSummaries.end());
-    REQUIRE(sector->getIcao24List().empty());
-
     Track stillOutside("ABC123", "2024-01-01T12:00:02Z",
                        outside, 10000.0, 450.0, 0.0, 180.0, 175.0);
 
@@ -323,10 +265,6 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
 
     ProcessingResult absent = computeData.collectProcessingResult();
     REQUIRE(absent.tracks.empty());
-
-    sector = findSectorSummary(absent, 5);
-    REQUIRE(sector != absent.sectorSummaries.end());
-    REQUIRE(sector->getIcao24List().empty());
 
     Track returned("ABC123", "2024-01-01T12:00:03Z",
                    inside, 10500.0, 450.0, 0.0, 180.0, 175.0);
@@ -341,11 +279,4 @@ TEST_CASE("handleTrackUpdate removes aircraft outside the grid and restores them
     REQUIRE(afterReturn.tracks[0].getPosition().latDeg == inside.latDeg);
     REQUIRE(afterReturn.tracks[0].getPosition().lonDeg == inside.lonDeg);
     REQUIRE(afterReturn.tracks[0].getAltitudeFeet() == 10500.0);
-
-    sector = findSectorSummary(afterReturn, 5);
-    REQUIRE(sector != afterReturn.sectorSummaries.end());
-
-    auto returnedIds = sector->getIcao24List();
-    REQUIRE(returnedIds.size() == 1);
-    REQUIRE(returnedIds[0] == "ABC123");
 }

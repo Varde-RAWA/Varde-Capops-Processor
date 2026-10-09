@@ -1,6 +1,5 @@
 #pragma once
 
-#include "compute/Grid.hpp"
 #include "config/Config.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include <sw/redis++/redis++.h>
@@ -14,7 +13,6 @@ class RedisPublisher
 
   private:
     const Configuration &config_;
-    const GridConfig &grid_;
     sw::redis::Redis redis_;
     std::string channel_;
 };

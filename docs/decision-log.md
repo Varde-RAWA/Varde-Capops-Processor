@@ -1,6 +1,6 @@
 # Decision Log — Varde Processor
 
-## Decision 001: Remove inherited weather and sector-capacity functionality
+## Decision 001: Remove inherited weather, sector-capacity, and sector-summary functionality
 
 **Date:** 08.10.26
 Status: Complete - code removal. Protobuf migration deferred
@@ -12,6 +12,8 @@ The inherited CapOps processor contains weather simulation, risk-event generatio
 ### Decision
 
 Remove the inherited weather, risk-event, and sector-capacity functionality while preserving the processor's required track-processing and Redis-publishing capabilities. This includes removing obsolete source code, dependencies, configuration, and tests that exclusively cover the deleted functionality.
+
+Sector summaries and local aircraft counts were also removed. They grouped aircraft into rectangular grid sectors, while Varde will evaluate each aircraft's position and predicted path against restricted-zone polygons. Individual aircraft snapshots already contain the position and movement information needed for those checks. Grid-based region filtering was retained.
 
 ### Rationale
 
@@ -31,19 +33,28 @@ The Protobuf schema was left unchanged during this removal to separate internal 
 - Deleted `WeatherSimulator`, `WeatherPatternUtils`, `WeatherCell`, and `WeatherSeverity`.
 - Removed weather handling, sector-risk evaluation, and risk-event generation from `ComputeData`.
 - Deleted `RiskEvent` and `SectorState`.
-- Removed weather, risk-status, and capacity fields and methods from `SectorSummary`, retaining aircraft counts and sector membership.
+- Removed weather, risk-status, capacity, local aircraft counts, and sector-membership functionality from the domain model; `SectorSummary` was subsequently deleted entirely.
 - Removed weather and capacity configuration from `Configuration`, `configuration.cfg`, and both test configuration helpers.
 - Removed weather, risk-event, and capacity mapping from `ProtoMapper`.
 - Deleted tests and assertions specific to the removed functionality, retaining aircraft-processing and publication tests.
 - Updated the aircraft pipeline integration test to use the revised ingest constructor.
 - The existing Protobuf schema remains unchanged pending the agreed contract migration and reservation of obsolete fields.
+- Removed local aircraft counts and their update methods, mapping, and test assertions.
+- Removed sector-summary initialization, ICAO membership tracking, and result collection from `ComputeData`.
+- Removed sector summaries from `ProcessingResult` and `ProtoMapper`.
+- Deleted `SectorSummary` and the `findSectorSummary()` test helper.
+- Removed sector-summary tests and assertions while retaining aircraft update, timestamp, movement, removal, re-entry, and serialization checks.
+- Removed unused mapper parameters, members, and local grid objects.
+- Retained `Grid` for operating-region filtering and simulation support.
 
 ### Verification
 
 - The processor builds successfully after weather, risk-event, and capacity removal.
 - All tests in `backend_tests` pass after these changes.
-- The processor was run after risk-event generation was removed, and a Redis subscriber received aircraft snapshots and sector counts.
+- A subsequent manual run confirmed that a Redis subscriber received metadata and 15 aircraft snapshots, without sector summaries or inherited risk events.
 
 ### Consequences
 
-Removing the inherited functionality simplifies the processor and prepares it for implementing Varde's restricted-airspace warning and avoidance functionality. The processor will no longer provide weather simulation, inherited risk-event calculations, or sector-capacity management.
+The processor now collects and publishes individual aircraft snapshots without weather, capacity, sector-risk, or sector-summary data. Aircraft storage, timestamp handling, operating-region filtering, and Redis publication remain.
+
+Restricted-zone checks and Varde alerts will be implemented separately. The Protobuf schema migration and replacement of the random simulator with scripted scenarios remain deferred.

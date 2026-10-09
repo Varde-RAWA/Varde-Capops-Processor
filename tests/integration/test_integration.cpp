@@ -17,7 +17,7 @@
 // ============================================================================
 // INTEGRATION TESTS - Combined logic
 // ============================================================================
-TEST_CASE("Track updates generate aircraft and sector results")
+TEST_CASE("Track updates generate aircraft results")
 {
     Configuration config = createTestConfig();
     ComputeData computeData(config);
@@ -37,12 +37,7 @@ TEST_CASE("Track updates generate aircraft and sector results")
     // Collect results
     ProcessingResult result = computeData.collectProcessingResult();
 
-    auto sectorSummary0 = findSectorSummary(result, 0);
-
     REQUIRE(result.tracks.size() == 5);
-    REQUIRE(result.sectorSummaries.size() == config.grid().rows * config.grid().cols);
-    REQUIRE(sectorSummary0 != result.sectorSummaries.end());
-    REQUIRE(sectorSummary0->getIcao24List().size() == 5);
 }
 TEST_CASE("Aircraft in different sectors are retained")
 {
@@ -93,7 +88,7 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
     ProcessingResult result = computeData.collectProcessingResult();
 
     // Map to protobuf (simulating what RedisPublisher does)
-    FlightDataProto proto = mapToProto(result, config, config.grid());
+    FlightDataProto proto = mapToProto(result, config);
 
     // Serialize to string (simulating protobuf serialization for Redis)
     std::string serialized;
@@ -127,10 +122,6 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
         }
     }
 
-    // Verify sector summaries made it through
-    REQUIRE(publishedData.sectorsummarydata().rowscount() == 20);
-    REQUIRE(publishedData.sectorsummarydata().columnscount() == 10);
-
     // Verify metadata
     REQUIRE(publishedData.metadata().version() == 1);
     REQUIRE(publishedData.metadata().timestamp().size() > 0);
@@ -154,7 +145,6 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
 TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
 {
     Configuration config = createTestConfig();
-    Grid grid(config.grid());
 
     RadarSimulator simulator(config.grid());
     simulator.initializeFlights(
@@ -180,17 +170,7 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
 
     REQUIRE(result.tracks.size() == 1);
 
-    int sectorId = grid.determineSector(Position{59.251, 4.35});
-    REQUIRE(sectorId == 21);
-
-    auto sector = findSectorSummary(result, sectorId);
-    REQUIRE(sector != result.sectorSummaries.end());
-
-    auto identifiers = sector->getIcao24List();
-    REQUIRE(identifiers.size() == 1);
-    REQUIRE(identifiers[0] == "SIM-0");
-
-    FlightDataProto message = mapToProto(result, config, config.grid());
+    FlightDataProto message = mapToProto(result, config);
 
     std::string bytes;
     REQUIRE(message.SerializeToString(&bytes));
@@ -209,15 +189,4 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
     REQUIRE(aircraft.timestamp() == tracks[0].getTimestamp());
     REQUIRE(aircraft.velocity().groundspeedknots() == Catch::Approx(216.0));
 
-    bool sectorFound = false;
-    for (const auto &summary : decoded.sectorsummarydata().sectorsummaries())
-    {
-        if (summary.sectorid() == sectorId)
-        {
-            sectorFound = true;
-            REQUIRE(summary.icao24list_size() == 1);
-            REQUIRE(summary.icao24list(0) == "SIM-0");
-        }
-    }
-    REQUIRE(sectorFound);
 }

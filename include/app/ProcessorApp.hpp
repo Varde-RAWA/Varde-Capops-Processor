@@ -5,7 +5,6 @@
 
 class RadarSimulator;
 class Configuration;
-class Grid;
 class IngestService;
 class ComputeData;
 class RedisPublisher;
