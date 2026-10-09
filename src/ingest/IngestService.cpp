@@ -2,9 +2,8 @@
 #include <optional>
 #include <stdexcept>
 
-IngestService::IngestService(GridConfig config, ITrackSource *trackSource,
-                             IWeatherSource *weatherSource)
-    : config_(config), trackSource_(trackSource), weatherSource_(weatherSource)
+IngestService::IngestService(GridConfig config, ITrackSource *trackSource)
+    : config_(config), trackSource_(trackSource)
 {
 }
 
@@ -25,7 +24,3 @@ std::vector<Track> IngestService::getAllTracks() const
     return trackSource_->getAllTracks();
 }
 
-WeatherSeverity IngestService::getWeatherSeverity(Position position) const
-{
-    return weatherSource_->getWeatherSeverity(position);
-}

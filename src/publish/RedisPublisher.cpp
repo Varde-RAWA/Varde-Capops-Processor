@@ -2,14 +2,12 @@
 #include "publish/ProtoMapper.hpp"
 
 RedisPublisher::RedisPublisher(const Configuration &config)
-    : config_(config), redis_(config.getRedisUrl()), channel_(config.getRedisChannel()),
-      grid_(config_.grid())
-{
-}
+    : config_(config), redis_(config.getRedisUrl()),
+      channel_(config.getRedisChannel()){}
 
 void RedisPublisher::publish(const ProcessingResult &result)
 {
-    FlightDataProto proto = mapToProto(result, config_, grid_);
+    FlightDataProto proto = mapToProto(result, config_);
 
     std::string serialized;
     bool ok = proto.SerializeToString(&serialized);
@@ -33,24 +31,6 @@ void RedisPublisher::publish(const ProcessingResult &result)
     //               << " time=" << track.getTimestamp() << "\n";
     // }
 
-    // // Sector summaries
-    // std::cout << "\nSectors:\n";
-
-    // for (const auto &sector : result.sectorSummaries)
-    // {
-    //     std::cout << "  Sector " << sector.getSectorId()
-    //               << " | aircraft=" << sector.getLocalAircraftCount()
-    //               << " | weather=" << weatherSeverityToString(sector.getWeatherSeverity())
-    //               << " | state=" << sectorStateToString(sector.getState()) << "\n";
-    // }
-
-    // // Risk events
-    // std::cout << "\nRiskEvents (" << result.riskEvents.size() << "):\n";
-
-    // for (const auto &event : result.riskEvents)
-    // {
-    //     std::cout << "  " << event.getMessage() << "\n";
-    // }
 
     // std::cout << "----------------------\n";
 

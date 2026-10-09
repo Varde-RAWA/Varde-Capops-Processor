@@ -1,13 +1,8 @@
 #include "../test_helpers.hpp"
-#include "compute/Grid.hpp"
 #include "config/Config.hpp"
-#include "domain/RiskEvent.hpp"
-#include "domain/SectorSummary.hpp"
 #include "domain/Track.hpp"
 #include "domain/types/Position.hpp"
 #include "domain/types/ProcessingResult.hpp"
-#include "domain/types/SectorState.hpp"
-#include "domain/types/WeatherSeverity.hpp"
 #include "proto/FlightData.pb.h"
 #include "publish/ProtoMapper.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -19,7 +14,6 @@
 TEST_CASE("Protobuf serialization round-trip")
 {
     Configuration config = createTestConfig();
-    Grid grid(config.grid());
 
     // Create a processing result with test data
     ProcessingResult originalResult;
@@ -33,21 +27,8 @@ TEST_CASE("Protobuf serialization round-trip")
     Track track2("DEF456", "2024-01-01T12:00:00Z", pos2, 8000.0, 400.0, -50.0, 270.0, 265.0);
     originalResult.tracks.push_back(track2);
 
-    // Add some risk events
-    RiskEvent riskEvent1(1, SectorState::AT_RISK, 0, "2024-01-01T12:00:00Z", "Test risk event");
-    originalResult.riskEvents.push_back(riskEvent1);
-
-    // Add sector summaries
-    SectorSummary summary1(0, 0, 0, "2024-01-01T12:00:00Z", 1, WeatherSeverity::OK, 1.0, 100.0,
-                           SectorState::NORMAL);
-    originalResult.sectorSummaries.push_back(summary1);
-
-    SectorSummary summary2(1, 0, 1, "2024-01-01T12:00:00Z", 0, WeatherSeverity::SEVERE, 0.6, 100.0,
-                           SectorState::AT_RISK);
-    originalResult.sectorSummaries.push_back(summary2);
-
     // Serialize to protobuf
-    FlightDataProto proto = mapToProto(originalResult, config, config.grid());
+    FlightDataProto proto = mapToProto(originalResult, config);
 
     // Serialize to string
     std::string serialized;
@@ -79,56 +60,16 @@ TEST_CASE("Protobuf serialization round-trip")
     REQUIRE(trackProto1.velocity().verticalspeedfeetperminute() == 100.0);
     REQUIRE(trackProto1.headingdegrees() == 180.0);
     REQUIRE(trackProto1.groundtrackdegrees() == 175.0);
-
-    // Verify risk events
-    REQUIRE(deserializedProto.riskeventdata().riskeventcount() == 1);
-    REQUIRE(deserializedProto.riskeventdata().riskevents_size() == 1);
-
-    const RiskEventProto &riskProto = deserializedProto.riskeventdata().riskevents(0);
-    REQUIRE(riskProto.riskeventid() == 1);
-    REQUIRE(riskProto.riskseverity() == "AT_RISK");
-    REQUIRE(riskProto.sectorid() == 0);
-    REQUIRE(riskProto.createdtimestamp() == "2024-01-01T12:00:00Z");
-    REQUIRE(riskProto.message() == "Test risk event");
-    REQUIRE(riskProto.acknowledged() == false);
-
-    // Verify sector summaries
-    REQUIRE(deserializedProto.sectorsummarydata().rowscount() == grid.rows());
-    REQUIRE(deserializedProto.sectorsummarydata().columnscount() == grid.cols());
-    REQUIRE(deserializedProto.sectorsummarydata().minlatitude() == config.grid().minLat);
-    REQUIRE(deserializedProto.sectorsummarydata().maxlatitude() == config.grid().maxLat);
-    REQUIRE(deserializedProto.sectorsummarydata().minlongitude() == config.grid().minLon);
-    REQUIRE(deserializedProto.sectorsummarydata().maxlongitude() == config.grid().maxLon);
-    REQUIRE(deserializedProto.sectorsummarydata().sectorsummaries_size() == 2);
-
-    const SectorSummaryProto &summaryProto1 =
-        deserializedProto.sectorsummarydata().sectorsummaries(0);
-    REQUIRE(summaryProto1.sectorid() == 0);
-    REQUIRE(summaryProto1.row() == 0);
-    REQUIRE(summaryProto1.column() == 0);
-    REQUIRE(summaryProto1.weatherseverity() == "OK");
-    REQUIRE(summaryProto1.riskseverity() == "NORMAL");
-    REQUIRE(summaryProto1.localaircraftcount() == 1);
-    REQUIRE(summaryProto1.localaircraftbasecapacity() == 100);
-    REQUIRE(summaryProto1.localaircrafteffectivecapacity() == 100);
-
-    const SectorSummaryProto &summaryProto2 =
-        deserializedProto.sectorsummarydata().sectorsummaries(1);
-    REQUIRE(summaryProto2.sectorid() == 1);
-    REQUIRE(summaryProto2.weatherseverity() == "SEVERE");
-    REQUIRE(summaryProto2.riskseverity() == "AT_RISK");
-    REQUIRE(summaryProto2.localaircrafteffectivecapacity() == 60); // 100 * 0.6
 }
 
 TEST_CASE("Protobuf serialization with empty result")
 {
     Configuration config = createTestConfig();
-    Grid grid(config.grid());
 
     ProcessingResult emptyResult;
 
     // Serialize to protobuf
-    FlightDataProto proto = mapToProto(emptyResult, config, config.grid());
+    FlightDataProto proto = mapToProto(emptyResult, config);
 
     // Serialize to string
     std::string serialized;
