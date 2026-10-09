@@ -1,0 +1,22 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "fa1001:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.6, 60.0]
+      },
+      "properties": {
+        "icao24": "fa1001",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [5.6, 60.0],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 360,
+        "groundTrackDeg": 90.0
+      }
+    }
+  ]
+}
