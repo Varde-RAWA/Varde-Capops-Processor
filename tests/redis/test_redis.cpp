@@ -112,7 +112,7 @@ TEST_CASE("RedisPublisher delivers the expected Protobuf message")
     REQUIRE(received);
     REQUIRE(receivedChannel == config.getRedisChannel());
 
-    FlightDataProto decoded;
+    varde::events::FlightDataProto decoded;
     REQUIRE(decoded.ParseFromString(receivedPayload));
 
     REQUIRE(decoded.metadata().version() == config.getProtobufVersion());
@@ -134,7 +134,4 @@ TEST_CASE("RedisPublisher delivers the expected Protobuf message")
     REQUIRE(track.headingdegrees() == 180.0);
     REQUIRE(track.groundtrackdegrees() == 175.0);
 
-    REQUIRE(decoded.riskeventdata().riskeventcount() == 0);
-    REQUIRE(decoded.riskeventdata().riskevents_size() == 0);
-    REQUIRE(decoded.sectorsummarydata().sectorsummaries_size() == 0);
 }

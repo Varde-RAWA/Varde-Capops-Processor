@@ -28,7 +28,7 @@ TEST_CASE("Protobuf serialization round-trip")
     originalResult.tracks.push_back(track2);
 
     // Serialize to protobuf
-    FlightDataProto proto = mapToProto(originalResult, config);
+    varde::events::FlightDataProto proto = mapToProto(originalResult, config);
 
     // Serialize to string
     std::string serialized;
@@ -37,7 +37,7 @@ TEST_CASE("Protobuf serialization round-trip")
     REQUIRE(serialized.size() > 0);
 
     // Deserialize back
-    FlightDataProto deserializedProto;
+    varde::events::FlightDataProto deserializedProto;
     bool deserializeOk = deserializedProto.ParseFromString(serialized);
     REQUIRE(deserializeOk == true);
 
@@ -50,7 +50,7 @@ TEST_CASE("Protobuf serialization round-trip")
     REQUIRE(deserializedProto.trackdata().coordinatesystem() == config.getCoordinateSystem());
     REQUIRE(deserializedProto.trackdata().tracks_size() == 2);
 
-    const TrackProto &trackProto1 = deserializedProto.trackdata().tracks(0);
+    const varde::events::TrackProto &trackProto1 = deserializedProto.trackdata().tracks(0);
     REQUIRE(trackProto1.icao24() == "ABC123");
     REQUIRE(trackProto1.timestamp() == "2024-01-01T12:00:00Z");
     REQUIRE(trackProto1.position().latitudedegrees() == 59.5);
@@ -69,7 +69,7 @@ TEST_CASE("Protobuf serialization with empty result")
     ProcessingResult emptyResult;
 
     // Serialize to protobuf
-    FlightDataProto proto = mapToProto(emptyResult, config);
+    varde::events::FlightDataProto proto = mapToProto(emptyResult, config);
 
     // Serialize to string
     std::string serialized;
@@ -77,14 +77,11 @@ TEST_CASE("Protobuf serialization with empty result")
     REQUIRE(serializeOk == true);
 
     // Deserialize back
-    FlightDataProto deserializedProto;
+    varde::events::FlightDataProto deserializedProto;
     bool deserializeOk = deserializedProto.ParseFromString(serialized);
     REQUIRE(deserializeOk == true);
 
     // Verify empty collections
     REQUIRE(deserializedProto.trackdata().totalaircraftcount() == 0);
     REQUIRE(deserializedProto.trackdata().tracks_size() == 0);
-    REQUIRE(deserializedProto.riskeventdata().riskeventcount() == 0);
-    REQUIRE(deserializedProto.riskeventdata().riskevents_size() == 0);
-    REQUIRE(deserializedProto.sectorsummarydata().sectorsummaries_size() == 0);
 }

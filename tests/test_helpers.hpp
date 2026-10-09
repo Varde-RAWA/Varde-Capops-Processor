@@ -50,7 +50,7 @@ inline Configuration createTestConfig()
     configFile << "coordinateSystem=WGS84\n";
     configFile << "\n";
     configFile << "[protobufVersion]\n";
-    configFile << "version=1\n";
+    configFile << "version=3\n";
     configFile << "\n";
     configFile << "[redis]\n";
     configFile << "redisUrl=tcp://127.0.0.1:6379\n";
@@ -91,7 +91,7 @@ inline Configuration createTestConfigApi()
     configFile << "coordinateSystem=WGS84\n";
     configFile << "\n";
     configFile << "[protobufVersion]\n";
-    configFile << "version=1\n";
+    configFile << "version=3\n";
     configFile << "\n";
     configFile << "[redis]\n";
     configFile << "redisUrl=tcp://127.0.0.1:6379\n";

@@ -5,7 +5,7 @@
 #include "domain/types/ProcessingResult.hpp"
 #include "proto/FlightData.pb.h"
 
-TrackProto mapToProto(const Track &track);
+varde::events::TrackProto mapToProto(const Track &track);
 
-FlightDataProto mapToProto(const ProcessingResult &result,
+varde::events::FlightDataProto mapToProto(const ProcessingResult &result,
                            const Configuration &config);

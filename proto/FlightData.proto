@@ -1,53 +1,48 @@
 syntax = "proto3";
 
+package varde.events;
+
+option java_package = "no.loopacademy.varde.events";
+option java_multiple_files = true;
+
+option csharp_namespace = "Varde.Events";
+
+
+// ======================================================
+// TRACK SNAPSHOT - inherited from contract v2
+// ======================================================
+
 message FlightDataProto {
   MetadataProto metadata = 1;
-  RiskEventDataProto riskEventData = 2;
-  SectorSummaryDataProto sectorSummaryData = 3;
+
+  // Removed in contract v3:
+  // RiskEventDataProto riskEventData = 2;
+  // SectorSummaryDataProto sectorSummaryData = 3;
+  reserved 2, 3;
+  reserved "riskEventData", "sectorSummaryData";
+
+  // MUST stay field 4 for backwards compatibility.
   TrackDataProto trackData = 4;
 }
 
+
+// ======================================================
+// COMMON METADATA
+// ======================================================
+
 message MetadataProto {
+  // Contract version.
+  // Varde events should now send version = 3.
   int32 version = 1;
+
+  // Keep this as string because contract v2 used string.
   string timestamp = 2;
 }
 
-message RiskEventDataProto {
-  int32 riskEventCount = 1;
-  repeated RiskEventProto riskEvents = 2;
-}
 
-message RiskEventProto {
-  int32 riskEventId = 1;
-  string riskSeverity = 2;
-  int32 sectorId = 3;
-  string createdTimestamp = 4;
-  string acknowledgedTimestamp = 5;
-  string message = 6;
-  bool acknowledged = 7;
-}
-
-message SectorSummaryDataProto {
-  int32 rowsCount = 1;
-  int32 columnsCount = 2;
-  double minLongitude = 3;
-  double maxLongitude = 4;
-  double minLatitude = 5;
-  double maxLatitude = 6;
-  repeated SectorSummaryProto sectorSummaries = 7;
-}
-
-message SectorSummaryProto {
-  int32 sectorId = 1;
-  int32 row = 2;
-  int32 column = 3;
-  string weatherSeverity = 4;
-  string riskSeverity = 5;
-  int32 localAircraftCount = 6;
-  int32 localAircraftBaseCapacity = 7;
-  int32 localAircraftEffectiveCapacity = 8;
-  repeated string icao24List = 9;
-} 
+// ======================================================
+// TRACK DATA - inherited, keep compatible
+// ======================================================
 
 message TrackDataProto {
   int32 totalAircraftCount = 1;
@@ -73,4 +68,137 @@ message PositionProto {
 message VelocityProto {
   double groundSpeedKnots = 1;
   double verticalSpeedFeetPerMinute = 2;
+}
+
+
+// ======================================================
+// WARNING / ALERT TYPES
+// ======================================================
+
+enum WarningLevel {
+  WARNING_LEVEL_NONE = 0;
+  WARNING_LEVEL_PREDICTED = 1;
+  WARNING_LEVEL_IMMINENT = 2;
+  WARNING_LEVEL_INFRINGEMENT = 3;
+}
+
+enum ZoneAlertEventType {
+  ZONE_ALERT_EVENT_TYPE_UNSPECIFIED = 0;
+  ZONE_ALERT_EVENT_OPENED = 1;
+  ZONE_ALERT_EVENT_LEVEL_CHANGED = 2;
+  ZONE_ALERT_EVENT_CLOSED = 3;
+}
+
+
+// ======================================================
+// ZONE ALERT EVENT
+//
+// Producer: Processor
+// Stream: varde:alerts
+// ======================================================
+
+message ZoneAlertEvent {
+  MetadataProto metadata = 1;
+
+  string alertId = 2;
+  string icao24 = 3;
+  string zoneId = 4;
+
+  WarningLevel level = 5;
+
+  // May be absent when the aircraft is already inside the
+  // zone or when the alert is being closed.
+  optional double timeToEntrySeconds = 6;
+
+  ZoneAlertEventType eventType = 7;
+}
+
+
+// ======================================================
+// VEKTOR
+// ======================================================
+
+message WaypointProto {
+  double longitudeDegrees = 1;
+  double latitudeDegrees = 2;
+}
+
+
+// Producer: Processor
+// Stream: varde:vektor-proposals
+
+message VektorProposalEvent {
+  MetadataProto metadata = 1;
+
+  string proposalId = 2;
+  string alertId = 3;
+  string icao24 = 4;
+  string zoneId = 5;
+
+  repeated WaypointProto waypoints = 6;
+
+  double extraDistanceKm = 7;
+  double extraTimeSeconds = 8;
+}
+
+
+// ======================================================
+// VEKTOR DECISION
+// ======================================================
+
+enum VektorDecision {
+  VEKTOR_DECISION_UNSPECIFIED = 0;
+  VEKTOR_DECISION_APPROVED = 1;
+  VEKTOR_DECISION_REJECTED = 2;
+  VEKTOR_DECISION_EXPIRED = 3;
+}
+
+
+// Producer: Ops Service
+// Stream: varde:vektor-decisions
+
+message VektorDecisionEvent {
+  MetadataProto metadata = 1;
+
+  string proposalId = 2;
+  VektorDecision decision = 3;
+
+  string decidedBy = 4;
+  string decidedTimestamp = 5;
+}
+
+
+// ======================================================
+// ALERT ACKNOWLEDGEMENT
+//
+// Producer: Ops Service
+// Stream: varde:acks
+// ======================================================
+
+message AlertAcknowledgedEvent {
+  MetadataProto metadata = 1;
+
+  string alertId = 2;
+  string acknowledgedBy = 3;
+  string acknowledgedTimestamp = 4;
+
+  WarningLevel levelAcknowledged = 5;
+}
+
+
+// ======================================================
+// AUDIT
+//
+// Producer: Geo Service / Ops Service
+// Stream: varde:audit
+// ======================================================
+
+message AuditEvent {
+  MetadataProto metadata = 1;
+
+  string actor = 2;
+  string role = 3;
+  string action = 4;
+  string target = 5;
+  string timestamp = 6;
 }
