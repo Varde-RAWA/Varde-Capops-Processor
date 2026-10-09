@@ -12,7 +12,7 @@ TEST_CASE("Configuration loads default values")
 {
     Configuration config = createTestConfig();
 
-    REQUIRE(config.getProtobufVersion() == 1);
+    REQUIRE(config.getProtobufVersion() == 3);
     REQUIRE(config.getCoordinateSystem() == "WGS84");
     REQUIRE(config.getNumFlights() == 3);
 }
@@ -28,7 +28,7 @@ TEST_CASE("Loads a complete configuration")
     REQUIRE(config.grid().cellSizeDeg == 0.1);
 
     REQUIRE(config.getCoordinateSystem() == "WGS84");
-    REQUIRE(config.getProtobufVersion() == 1);
+    REQUIRE(config.getProtobufVersion() == 3);
 
     REQUIRE(config.getRedisUrl() == "tcp://127.0.0.1:6379");
     REQUIRE(config.getRedisChannel() == "test_channel");

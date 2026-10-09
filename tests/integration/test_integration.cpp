@@ -88,14 +88,14 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
     ProcessingResult result = computeData.collectProcessingResult();
 
     // Map to protobuf (simulating what RedisPublisher does)
-    FlightDataProto proto = mapToProto(result, config);
+    varde::events::FlightDataProto proto = mapToProto(result, config);
 
     // Serialize to string (simulating protobuf serialization for Redis)
     std::string serialized;
     bool serializeOk = proto.SerializeToString(&serialized);
 
     // Deserialize to verify the published data is valid
-    FlightDataProto publishedData;
+    varde::events::FlightDataProto publishedData;
     bool deserializeOk = publishedData.ParseFromString(serialized);
 
     // Verify tracks made it through the pipeline
@@ -109,7 +109,7 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
         bool found = false;
         for (int i = 0; i < publishedData.trackdata().tracks_size(); ++i)
         {
-            const TrackProto &trackProto = publishedData.trackdata().tracks(i);
+            const varde::events::TrackProto &trackProto = publishedData.trackdata().tracks(i);
             if (trackProto.icao24() == expectedId)
             {
                 REQUIRE(trackProto.timestamp() == "2024-01-01T12:00:00Z");
@@ -123,7 +123,7 @@ TEST_CASE("End-to-end: Simulated data is published to Redis")
     }
 
     // Verify metadata
-    REQUIRE(publishedData.metadata().version() == 1);
+    REQUIRE(publishedData.metadata().version() == config.getProtobufVersion());
     REQUIRE(publishedData.metadata().timestamp().size() > 0);
 
     // Try to actually publish to Redis if available
@@ -170,12 +170,12 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
 
     REQUIRE(result.tracks.size() == 1);
 
-    FlightDataProto message = mapToProto(result, config);
+    varde::events::FlightDataProto message = mapToProto(result, config);
 
     std::string bytes;
     REQUIRE(message.SerializeToString(&bytes));
 
-    FlightDataProto decoded;
+    varde::events::FlightDataProto decoded;
     REQUIRE(decoded.ParseFromString(bytes));
 
     REQUIRE(decoded.metadata().version() == config.getProtobufVersion());

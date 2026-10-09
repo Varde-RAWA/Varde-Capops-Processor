@@ -7,7 +7,7 @@ RedisPublisher::RedisPublisher(const Configuration &config)
 
 void RedisPublisher::publish(const ProcessingResult &result)
 {
-    FlightDataProto proto = mapToProto(result, config_);
+    varde::events::FlightDataProto proto = mapToProto(result, config_);
 
     std::string serialized;
     bool ok = proto.SerializeToString(&serialized);
