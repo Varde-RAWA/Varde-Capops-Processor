@@ -51,13 +51,16 @@ void ProcessorApp::initializeSources(const Configuration &config)
 
     if (simulationMode_)
     {
-        radarSimulator_ = std::make_unique<RadarSimulator>(config.grid());
-        ///radarSimulator_->initializeFlights(config.getNumFlights());
         radarSimulator_->initializeFlights(
-        {{60.0, 4.6}},
-        {{60.0, 5.6}},
-        {360.0 * 1852.0 / 3600.0} 
-        );
+            {{60.0, 4.6}}, // Start: latitude 60.0°, longitude 4.6° from Scenario 1.
+            {{60.0, 5.6}}, // Destination: latitude 60.0°, longitude 5.6° from Scenario 1.
+            {
+                // Scenario speed: 360 knots (nautical miles per hour).
+                // Multiply by 1852 metres per nautical mile, then divide
+                // by 3600 seconds per hour to get 185.2 metres per second.
+                360.0 * 1852.0 / 3600.0
+            }
+);
 
         trackSource_ = std::make_unique<TrackSourceSimulated>(*radarSimulator_);
         return;
