@@ -2,18 +2,18 @@
 
 #include "domain/Track.hpp"
 #include "domain/types/Position.hpp"
-#include "domain/RestrictedZone.hpp"
+#include "domain/Zone.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
 // ============================================================================
-// DOMAIN TESTS - Track, RestrictedZone, Position
+// DOMAIN TESTS - Track, Zone, Position
 // ============================================================================
 
 
-RestrictedZone makeSquareZone()
+Zone makeSquareZone()
 {
-    return RestrictedZone(
+    return Zone(
         "D-101",
         ZoneType::Danger,
         {
@@ -42,9 +42,9 @@ TEST_CASE("Track initialization and getters")
     REQUIRE(track.getGroundTrackDegrees() == 175.0);
 }
 
-TEST_CASE("RestrictedZone initialization and getters")
+TEST_CASE("Zone initialization and getters")
 {
-    const RestrictedZone zone = makeSquareZone();
+    const Zone zone = makeSquareZone();
 
     REQUIRE(zone.getId() == "D-101");
     REQUIRE(zone.getZoneType() == ZoneType::Danger);
@@ -53,7 +53,7 @@ TEST_CASE("RestrictedZone initialization and getters")
 
 TEST_CASE("Disabled zone reports that it is disabled")
 {
-    const RestrictedZone zone(
+    const Zone zone(
         "D-102",
         ZoneType::Disabled,
         {
@@ -67,25 +67,25 @@ TEST_CASE("Disabled zone reports that it is disabled")
     REQUIRE_FALSE(zone.isEnabled());
 }
 
-TEST_CASE("RestrictedZone detects a position outside the polygon")
+TEST_CASE("Zone detects a position outside the polygon")
 {
-    const RestrictedZone zone = makeSquareZone();
+    const Zone zone = makeSquareZone();
 
     REQUIRE_FALSE(zone.containsPosition({5.0, 12.0}));
 }
 
-TEST_CASE("RestrictedZone treats an edge and a corner as inside")
+TEST_CASE("Zone treats an edge and a corner as inside")
 {
-    const RestrictedZone zone = makeSquareZone();
+    const Zone zone = makeSquareZone();
 
     REQUIRE(zone.containsPosition({0.0, 5.0}));  // On an edge.
     REQUIRE(zone.containsPosition({0.0, 0.0}));  // At a corner.
 }
 
-TEST_CASE("RestrictedZone rejects a polygon without repeated vertices")
+TEST_CASE("Zone rejects a polygon without repeated vertices")
 {
     REQUIRE_THROWS_AS(
-        RestrictedZone(
+    Zone(
             "D-103",
             ZoneType::Restricted,
             {
@@ -97,9 +97,9 @@ TEST_CASE("RestrictedZone rejects a polygon without repeated vertices")
         std::invalid_argument);
 }
 
-TEST_CASE("RestrictedZone handles a concave polygon")
+TEST_CASE("Zone handles a concave polygon")
 {
-    const RestrictedZone zone(
+    const Zone zone(
         "D-104",
         ZoneType::Temporary,
         {
@@ -117,10 +117,10 @@ TEST_CASE("RestrictedZone handles a concave polygon")
     REQUIRE_FALSE(zone.containsPosition({8.0, 8.0})); // In the concave cutout.
 }
 
-TEST_CASE("RestrictedZone rejects fewer than three vertices")
+TEST_CASE("Zone rejects fewer than three vertices")
 {
     REQUIRE_THROWS_AS(
-        RestrictedZone(
+        Zone(
             "invalid",
             ZoneType::Danger,
             {

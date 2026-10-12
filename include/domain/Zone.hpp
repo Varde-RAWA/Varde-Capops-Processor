@@ -13,7 +13,7 @@ enum class ZoneType
     Temporary
 };
 
-class RestrictedZone
+class Zone
 {
     private:
         std::string id_;
@@ -22,7 +22,7 @@ class RestrictedZone
         std::vector<Position> vertices_;
 
     public:
-        RestrictedZone(std::string id, ZoneType zoneType, std::vector<Position> vertices);
+        Zone(std::string id, ZoneType zoneType, std::vector<Position> vertices);
 
         const std::string &getId() const;
         bool isEnabled() const;

@@ -1,4 +1,4 @@
-#include "domain/RestrictedZone.hpp"
+#include "domain/Zone.hpp"
 
 #include <string>
 #include <utility>
@@ -7,36 +7,35 @@
 #include <stdexcept>
 
 
-RestrictedZone::RestrictedZone(std::string id, ZoneType zoneType, std::vector<Position> vertices) : 
+Zone::Zone(std::string id, ZoneType zoneType, std::vector<Position> vertices) : 
     id_(std::move(id)), type_(zoneType), vertices_(std::move(vertices)){
-
-        if (vertices_.size() < 3 + 1) {
-            throw std::invalid_argument("A restricted zone must have at least 3 vertices.");
-        }
-
+        
         const Position &first = vertices_.front();
         const Position &last = vertices_.back();
         if (first.latDeg != last.latDeg || first.lonDeg != last.lonDeg) {
             throw std::invalid_argument("The last polygon vertex must repeat the first vertex.");
         }
+        if (vertices_.size() < 3 + 1) {
+            throw std::invalid_argument("A zone must have at least 3 vertices.");
+        }
 
         enabled_ = (zoneType != ZoneType::Disabled);
     }
 
-const std::string& RestrictedZone::getId() const{
+const std::string& Zone::getId() const{
     return id_;
 }
 
-bool RestrictedZone::isEnabled() const{
+bool Zone::isEnabled() const{
     return enabled_;
 }
 
-ZoneType RestrictedZone::getZoneType() const{
+ZoneType Zone::getZoneType() const{
     return type_;
 }
 
 /// usual ray-casting algorithm for point-in-polygon, with a tolerance for points on edges or vertices
-bool RestrictedZone::containsPosition(const Position &position) const
+bool Zone::containsPosition(const Position &position) const
 {
 
     const double x = position.lonDeg;
