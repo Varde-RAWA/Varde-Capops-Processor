@@ -4,6 +4,7 @@
 #include <utility>
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 
 RestrictedZone::RestrictedZone(std::string id, ZoneType zoneType, std::vector<Position> vertices) : 
@@ -11,6 +12,12 @@ RestrictedZone::RestrictedZone(std::string id, ZoneType zoneType, std::vector<Po
 
         if (vertices_.size() < 3 + 1) {
             throw std::invalid_argument("A restricted zone must have at least 3 vertices.");
+        }
+
+        const Position &first = vertices_.front();
+        const Position &last = vertices_.back();
+        if (first.latDeg != last.latDeg || first.lonDeg != last.lonDeg) {
+            throw std::invalid_argument("The last polygon vertex must repeat the first vertex.");
         }
 
         enabled_ = (zoneType != ZoneType::Disabled);
@@ -28,6 +35,7 @@ ZoneType RestrictedZone::getZoneType() const{
     return type_;
 }
 
+/// usual ray-casting algorithm for point-in-polygon, with a tolerance for points on edges or vertices
 bool RestrictedZone::containsPosition(const Position &position) const
 {
 
