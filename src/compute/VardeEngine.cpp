@@ -31,11 +31,21 @@ Position VardeEngine::predictPosition(const Track& track, double secondsAhead) c
         currentPosition.latDeg + northKm / kilometresPerLatitudeDegree,
         currentPosition.lonDeg + eastKm / kilometresPerLongitudeDegree
     };
-
-
-
 }
 
+
+
+std::vector<std::string> VardeEngine::getZonesContainingTrack(const Track& track, const std::vector<Zone>& zones) const{
+    std::vector<std::string> matchingZoneIds;
+    const Position trackPosition = track.getPosition();
+
+    for (const Zone& zone : zones) {
+        if (zone.isEnabled() && zone.containsPosition(trackPosition)) {
+            matchingZoneIds.push_back(zone.getId());
+        }
+    }
+    return matchingZoneIds;
+}
 
 
 

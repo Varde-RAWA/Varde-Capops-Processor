@@ -151,3 +151,58 @@ TEST_CASE("Varde rejects negative prediction time", "[projection]")
         std::invalid_argument
     );
 }
+
+
+TEST_CASE("Varde finds enabled zones containing an aircraft", "[zones]")
+{
+    const std::vector<Position> vertices{
+        {59.95, 5.00},
+        {59.95, 5.20},
+        {60.05, 5.20},
+        {60.05, 5.00},
+        {59.95, 5.00}
+    };
+
+    // Two enabled zones overlap. A disabled zone has the same boundary.
+    const std::vector<Zone> zones{
+        Zone("D-101", ZoneType::Danger, vertices),
+        Zone("R-201", ZoneType::Restricted, vertices),
+        Zone("D-102", ZoneType::Disabled, vertices)
+    };
+
+    Position position{60.0, 5.1};
+    std::vector<std::string> expected{"D-101", "R-201"};
+
+    SECTION("Inside both enabled zones")
+    {
+        position = {60.0, 5.1};
+    }
+
+    SECTION("Outside all zones")
+    {
+        position = {60.0, 4.6};
+        expected.clear();
+    }
+
+    SECTION("On the boundary of both enabled zones")
+    {
+        position = {60.0, 5.0};
+    }
+
+    const Track track = makePredictionTrack(position, 360.0, 90.0);
+    const VardeEngine varde;
+
+    const auto matches = varde.getZonesContainingTrack(track, zones);
+
+    REQUIRE(matches == expected);
+}
+
+TEST_CASE("Varde returns no matches when there are no zones", "[zones]")
+{
+    const Track track =
+        makePredictionTrack({60.0, 5.1}, 360.0, 90.0);
+
+    const VardeEngine varde;
+
+    REQUIRE(varde.getZonesContainingTrack(track, {}).empty());
+}
