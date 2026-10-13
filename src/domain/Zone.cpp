@@ -124,8 +124,16 @@ std::optional<double> Zone::firstEntryFraction(
     }
 
     const double pathLength = std::sqrt(lengthSquared);
-    const double coordinateTolerance = 1e-9;
-    const double pathTolerance = coordinateTolerance / pathLength;
+
+    // Coordinate differences below this count as boundary contact.
+    // 1e-9 degrees is approximately 0.11 mm in latitude.
+    constexpr double coordinateToleranceDegrees = 1e-9;
+
+    // Treat segments as parallel when the absolute sine of their
+    // angle is below this threshold. Allows for floating-point rounding.
+    constexpr double parallelSinTolerance = 1e-12;
+
+    const double pathTolerance = coordinateToleranceDegrees / pathLength;
 
     const auto cross = [](double ax, double ay, double bx, double by)
     {
@@ -155,13 +163,13 @@ std::optional<double> Zone::firstEntryFraction(
         double entry = 0.0;
 
         if (std::abs(denominator) <=
-            1e-12 * pathLength * edgeLength)
+            parallelSinTolerance * pathLength * edgeLength)
         {
             // Parallel segments only meet if they lie on the same line.
             const double distanceToLine =
                 std::abs(cross(qx, qy, rx, ry)) / pathLength;
 
-            if (distanceToLine > coordinateTolerance)
+            if (distanceToLine > coordinateToleranceDegrees)
             {
                 continue;
             }
@@ -189,7 +197,7 @@ std::optional<double> Zone::firstEntryFraction(
             const double u = cross(qx, qy, rx, ry) / denominator;
 
             const double edgeTolerance =
-                coordinateTolerance / edgeLength;
+                coordinateToleranceDegrees / edgeLength;
 
             if (t < -pathTolerance || t > 1.0 + pathTolerance ||
                 u < -edgeTolerance || u > 1.0 + edgeTolerance)

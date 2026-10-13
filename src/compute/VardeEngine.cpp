@@ -54,6 +54,8 @@ std::vector<ZoneCheckResult> VardeEngine::evaluateTrack(
 {
     constexpr double lookAheadSeconds = 120.0;
     constexpr double imminentSeconds = 30.0;
+
+    // Numerical allowance of 0.1 microseconds at the 30-second boundary.
     constexpr double timeTolerance = 1e-7;
 
     const Position currentPosition = track.getPosition();

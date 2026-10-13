@@ -3,10 +3,18 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <cmath>
+#include <optional>
 #include <stdexcept>
 
 namespace
 {
+// Comparison allowances: about 1.1 cm in latitude and 10 microseconds.
+constexpr double positionToleranceDegrees = 1e-7;
+constexpr double entryTimeToleranceSeconds = 1e-5;
+
+// Only supplies the ID, timestamp and unrelated altitude/vertical-speed fields.
+// Each test supplies its own position, speed in knots and direction in degrees.
 Track makePredictionTrack(
     Position position,
     double speedKnots,
@@ -16,9 +24,9 @@ Track makePredictionTrack(
         "SIM-0",
         "2026-10-05T12:00:00Z",
         position,
-        15000.0,
+        15000.0, // Altitude in feet; the zones are two-dimensional.
         speedKnots,
-        0.0,
+        0.0, // No vertical movement.
         groundTrackDegrees,
         groundTrackDegrees
     );
@@ -27,116 +35,151 @@ Track makePredictionTrack(
 
 TEST_CASE("Varde projects an eastward aircraft 120 seconds ahead")
 {
+    const Position startPosition{60.0, 4.6};
+    constexpr double speedKnots = 360.0;
+    constexpr double predictionSeconds = 120.0;
+
     const Track track(
         "SIM-0",
         "2026-10-05T12:00:00Z",
-        Position{60.0, 4.6},
+        startPosition,
         15000.0, // Altitude in feet.
-        360.0,   // Ground speed in knots.
+        speedKnots,
         0.0,     // Vertical speed.
         90.0,    // Heading.
         90.0     // Ground-track direction.
     );
 
     const VardeEngine varde;
-    const Position predicted = varde.predictPosition(track, 120);
+    const Position predicted = varde.predictPosition(track, predictionSeconds);
 
-    // At 360 knots, the aircraft travels 22.224 km in 120 seconds.
+    // At latitude 60°, one longitude degree is 55.66 km.
+    constexpr double kilometresPerLongitudeDegree = 55.66;
+    constexpr double kilometresPerNauticalMile = 1.852;
+    constexpr double secondsPerHour = 3600.0;
+
+    // 360 knots for 120 seconds gives 22.224 km.
+    const double distanceKm =
+        speedKnots * kilometresPerNauticalMile * predictionSeconds / secondsPerHour;
+
+    const double expectedLongitude =
+        startPosition.lonDeg + distanceKm / kilometresPerLongitudeDegree;
+
     REQUIRE(predicted.latDeg ==
-            Catch::Approx(60.0).margin(1e-7));
+            Catch::Approx(startPosition.latDeg).margin(positionToleranceDegrees));
 
     REQUIRE(predicted.lonDeg ==
-            Catch::Approx(4.99928135).margin(1e-7));
+            Catch::Approx(expectedLongitude).margin(positionToleranceDegrees));
 }
 
 TEST_CASE("Varde predicts movement in all four directions")
 {
+    const Position startPosition{60.0, 4.6};
+    const double speedKnots = 360.0;
+    const double predictionSeconds = 120.0;
+
+    // One knot is 1.852 km/hour; divide by 3600 for km/second.
+    const double distanceKm = speedKnots * 1.852 / 3600.0 * predictionSeconds;
+    // VD-FUN-021: 111.32 km per latitude degree; at 60 N, 55.66 km per longitude degree.
+    const double kilometresPerLatitudeDegree = 111.32;
+    const double kilometresPerLongitudeDegree = 55.66;
+    const double latitudeChange = distanceKm / kilometresPerLatitudeDegree;
+    const double longitudeChange = distanceKm / kilometresPerLongitudeDegree;
+
     double direction = 0.0;
-    Position expected;
+    Position expected = startPosition;
 
     SECTION("North")
     {
         direction = 0.0;
-        expected = {60.19964068, 4.6};
+        expected.latDeg += latitudeChange;
     }
 
     SECTION("East")
     {
         direction = 90.0;
-        expected = {60.0, 4.99928135};
+        expected.lonDeg += longitudeChange;
     }
 
     SECTION("South")
     {
         direction = 180.0;
-        expected = {59.80035932, 4.6};
+        expected.latDeg -= latitudeChange;
     }
 
     SECTION("West")
     {
         direction = 270.0;
-        expected = {60.0, 4.20071865};
+        expected.lonDeg -= longitudeChange;
     }
 
     const Track track =
-        makePredictionTrack({60.0, 4.6}, 360.0, direction);
+        makePredictionTrack(startPosition, speedKnots, direction);
 
     const VardeEngine varde;
-    const Position predicted = varde.predictPosition(track, 120.0);
+    const Position predicted = varde.predictPosition(track, predictionSeconds);
 
     REQUIRE(predicted.latDeg ==
-            Catch::Approx(expected.latDeg).margin(1e-7));
+            Catch::Approx(expected.latDeg).margin(positionToleranceDegrees));
 
     REQUIRE(predicted.lonDeg ==
-            Catch::Approx(expected.lonDeg).margin(1e-7));
+            Catch::Approx(expected.lonDeg).margin(positionToleranceDegrees));
 }
 
 TEST_CASE("A stationary aircraft stays at its position")
 {
+    const Position startPosition{60.0, 4.6};
     const Track track =
-        makePredictionTrack({60.0, 4.6}, 0.0, 45.0);
+        makePredictionTrack(startPosition, 0.0, 45.0);
 
     const VardeEngine varde;
     const Position predicted = varde.predictPosition(track, 120.0);
 
-    REQUIRE(predicted.latDeg == Catch::Approx(60.0));
-    REQUIRE(predicted.lonDeg == Catch::Approx(4.6));
+    REQUIRE(predicted.latDeg == Catch::Approx(startPosition.latDeg).margin(positionToleranceDegrees));
+    REQUIRE(predicted.lonDeg == Catch::Approx(startPosition.lonDeg).margin(positionToleranceDegrees));
 }
 
 TEST_CASE("Varde accounts for latitude when moving east")
 {
+    const double speedKnots = 360.0;
+    const double predictionSeconds = 120.0;
     double latitude = 0.0;
-    double expectedLongitude = 0.0;
 
     SECTION("At the equator")
     {
         latitude = 0.0;
-        expectedLongitude = 0.19964068;
     }
 
     SECTION("At 60 degrees north")
     {
         latitude = 60.0;
-        expectedLongitude = 0.39928135;
     }
 
     SECTION("Near the North Pole at 80 degrees north")
     {
         latitude = 80.0;
-        expectedLongitude = 1.14968483;
     }
 
     const Track track =
-        makePredictionTrack({latitude, 0.0}, 360.0, 90.0);
+        makePredictionTrack({latitude, 0.0}, speedKnots, 90.0);
+
+    // Convert knots to km/second, then multiply by the prediction duration.
+    const double distanceKm = speedKnots * 1.852 / 3600.0 * predictionSeconds;
+    // VD-FUN-021: longitude degrees cover fewer kilometres at higher latitudes.
+    const double kilometresPerLatitudeDegree = 111.32;
+    const double radiansPerDegree = std::acos(-1.0) / 180.0;
+    const double kilometresPerLongitudeDegree =
+        kilometresPerLatitudeDegree * std::cos(latitude * radiansPerDegree);
+    const double expectedLongitude = distanceKm / kilometresPerLongitudeDegree;
 
     const VardeEngine varde;
-    const Position predicted = varde.predictPosition(track, 120.0);
+    const Position predicted = varde.predictPosition(track, predictionSeconds);
 
     REQUIRE(predicted.latDeg ==
-            Catch::Approx(latitude).margin(1e-7));
+            Catch::Approx(latitude).margin(positionToleranceDegrees));
 
     REQUIRE(predicted.lonDeg ==
-            Catch::Approx(expectedLongitude).margin(1e-7));
+            Catch::Approx(expectedLongitude).margin(positionToleranceDegrees));
 }
 
 TEST_CASE("Varde rejects negative prediction time")
@@ -155,6 +198,7 @@ TEST_CASE("Varde rejects negative prediction time")
 
 TEST_CASE("Varde finds enabled zones containing an aircraft")
 {
+    // SRS zone D-101: latitude 59.95–60.05 N, longitude 5.00–5.20 E.
     const std::vector<Position> vertices{
         {59.95, 5.00},
         {59.95, 5.20},
@@ -210,6 +254,13 @@ TEST_CASE("Varde returns no matches when there are no zones")
 
 TEST_CASE("Varde calculates the SRS warning levels")
 {
+    // VD-FUN-022's worked example: aircraft flies east at 360 knots and latitude 60 N.
+    const double speedKnots = 360.0;
+    const double speedKmPerSecond = speedKnots * 1.852 / 3600.0;
+    const double kilometresPerLongitudeDegree = 55.66; // 111.32 * cos(60 degrees).
+    const double zoneWestLongitude = 5.00;
+
+    // D-101 is a closed rectangle: latitude 59.95–60.05 N, longitude 5.00–5.20 E.
     const Zone zone(
         "D-101",
         ZoneType::Danger,
@@ -234,21 +285,24 @@ TEST_CASE("Varde calculates the SRS warning levels")
     {
         position = {60.0, 4.6017};
         expectedLevel = WarningLevel::PREDICTED;
-        expectedTime = 119.70506479;
+        expectedTime = (zoneWestLongitude - position.lonDeg) *
+            kilometresPerLongitudeDegree / speedKmPerSecond;
     }
 
     SECTION("Entry is beyond 30 seconds")
     {
         position = {60.0, 4.89};
         expectedLevel = WarningLevel::PREDICTED;
-        expectedTime = 33.05939525;
+        expectedTime = (zoneWestLongitude - position.lonDeg) *
+            kilometresPerLongitudeDegree / speedKmPerSecond;
     }
 
     SECTION("Entry is within 30 seconds")
     {
         position = {60.0, 4.91};
         expectedLevel = WarningLevel::IMMINENT;
-        expectedTime = 27.04859611;
+        expectedTime = (zoneWestLongitude - position.lonDeg) *
+            kilometresPerLongitudeDegree / speedKmPerSecond;
     }
 
     SECTION("Aircraft is already inside")
@@ -262,7 +316,7 @@ TEST_CASE("Varde calculates the SRS warning levels")
         position = {60.1, 4.91};
     }
 
-    const Track track = makePredictionTrack(position, 360.0, 90.0);
+    const Track track = makePredictionTrack(position, speedKnots, 90.0);
     const VardeEngine varde;
     const auto results = varde.evaluateTrack(track, {zone});
 
@@ -277,7 +331,7 @@ TEST_CASE("Varde calculates the SRS warning levels")
     {
         REQUIRE(actualTime.has_value());
         REQUIRE(*actualTime ==
-                Catch::Approx(*expectedTime).margin(1e-5));
+                Catch::Approx(*expectedTime).margin(entryTimeToleranceSeconds));
     }
     else
     {
@@ -288,6 +342,7 @@ TEST_CASE("Varde calculates the SRS warning levels")
 
 TEST_CASE("Varde detects a path crossing a zone with both endpoints outside")
 {
+    // Closed rectangle from SRS D-101: west edge 5.00 E, east edge 5.20 E.
     const Zone zone(
         "D-101",
         ZoneType::Danger,
@@ -299,8 +354,9 @@ TEST_CASE("Varde detects a path crossing a zone with both endpoints outside")
             {59.95, 5.00}
         });
 
-    const Track track =
-        makePredictionTrack({60.0, 4.91}, 360.0, 90.0);
+    const Position startPosition{60.0, 4.91};
+    const double speedKnots = 360.0;
+    const Track track = makePredictionTrack(startPosition, speedKnots, 90.0);
     const VardeEngine varde;
 
     const Position end = varde.predictPosition(track, 120.0);
@@ -313,12 +369,20 @@ TEST_CASE("Varde detects a path crossing a zone with both endpoints outside")
     REQUIRE(results[0].getZoneId() == "D-101");
     REQUIRE(results[0].getLevel() == WarningLevel::IMMINENT);
     REQUIRE(results[0].getTimeToEntrySeconds().has_value());
+    // Expected time to the western edge = distance in km / speed in km/second.
+    const double zoneWestLongitude = 5.00;
+    const double kilometresPerLongitudeDegree = 55.66; // At latitude 60 N.
+    const double speedKmPerSecond = speedKnots * 1.852 / 3600.0;
+    const double expectedEntryTimeSeconds = (zoneWestLongitude - startPosition.lonDeg) *
+        kilometresPerLongitudeDegree / speedKmPerSecond;
+
     REQUIRE(*results[0].getTimeToEntrySeconds() ==
-            Catch::Approx(27.04859611).margin(1e-5));
+            Catch::Approx(expectedEntryTimeSeconds).margin(entryTimeToleranceSeconds));
 }
 
 TEST_CASE("Varde evaluates enabled zones separately")
 {
+    // Aircraft at 4.91 E approaches D-101, whose western edge is 5.00 E.
     const std::vector<Position> approachingZone{
         {59.95, 5.00},
         {59.95, 5.20},
@@ -327,6 +391,7 @@ TEST_CASE("Varde evaluates enabled zones separately")
         {59.95, 5.00}
     };
 
+    // This rectangle surrounds the aircraft: longitude 4.85–4.95 E.
     const std::vector<Position> currentZone{
         {59.95, 4.85},
         {59.95, 4.95},
@@ -359,6 +424,4 @@ TEST_CASE("Varde evaluates enabled zones separately")
     REQUIRE(results[1].getLevel() == WarningLevel::INFRINGEMENT);
     REQUIRE_FALSE(results[1].getTimeToEntrySeconds().has_value());
 }
-
-
 
