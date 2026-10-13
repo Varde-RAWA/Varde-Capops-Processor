@@ -58,3 +58,26 @@ The Protobuf schema was left unchanged during this removal to separate internal 
 The processor now collects and publishes individual aircraft snapshots without weather, capacity, sector-risk, or sector-summary data. Aircraft storage, timestamp handling, operating-region filtering, and Redis publication remain.
 
 Restricted-zone checks and Varde alerts will be implemented separately. The Protobuf schema migration and replacement of the random simulator with scripted scenarios remain deferred.
+
+
+## Decision 002: Give zone assessment its own engine
+
+**Date:** 13.10.26
+**Status:** In progress
+
+### Context
+
+The inherited processor handles aircraft tracks, but it does not assess whether an aircraft is inside or approaching a restricted zone. Varde needs this assessment for each aircraft and active zone.
+
+### Decision
+
+Implement `VardeEngine` as the component that evaluates aircraft movement against zones. It uses the current `Track` to project the aircraft's path, checks that path against each supplied zone polygon, and returns the warning level and first entry time for each aircraft–zone pair.
+
+The application will supply tracks and zones to the engine and handle the results. Zone assessment remains separate from acquiring aircraft data and publishing messages.
+
+### Reason
+
+Keeping the assessment in one component gives simulated and live aircraft the same warning logic. It also lets the zone calculations be tested before they are connected to the processing loop.
+
+
+

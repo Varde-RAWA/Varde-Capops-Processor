@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 enum class ZoneType
 {
@@ -28,6 +29,7 @@ class Zone
         bool isEnabled() const;
         ZoneType getZoneType() const;
         bool containsPosition(const Position &position) const;
+        std::optional<double> firstEntryFraction(const Position &start, const Position &end) const;
 };
 
 

@@ -48,5 +48,55 @@ std::vector<std::string> VardeEngine::getZonesContainingTrack(const Track& track
 }
 
 
+std::vector<ZoneCheckResult> VardeEngine::evaluateTrack(
+    const Track &track,
+    const std::vector<Zone> &Zones) const
+{
+    constexpr double lookAheadSeconds = 120.0;
+    constexpr double imminentSeconds = 30.0;
 
+    // Numerical allowance of 0.1 microseconds at the 30-second boundary.
+    constexpr double timeTolerance = 1e-7;
+
+    const Position currentPosition = track.getPosition();
+    const Position predicted = predictPosition(track, lookAheadSeconds);
+
+    std::vector<ZoneCheckResult> results;
+
+    for (const Zone &zone : Zones)
+    {
+        if (!zone.isEnabled())
+        {
+            continue;
+        }
+
+        WarningLevel level = WarningLevel::NONE;
+        std::optional<double> timeToEntry;
+
+        if (zone.containsPosition(currentPosition))
+        {
+            level = WarningLevel::INFRINGEMENT;
+        }
+        else
+        {
+            const auto entry =
+                zone.firstEntryFraction(currentPosition, predicted);
+
+            if (entry)
+            {
+                timeToEntry = *entry * lookAheadSeconds;
+
+                // Allow tiny floating-point rounding at 30 seconds.
+                level = *timeToEntry <= imminentSeconds + timeTolerance
+                    ? WarningLevel::IMMINENT
+                    : WarningLevel::PREDICTED;
+            }
+        }
+
+        results.emplace_back(
+            track.getIcao(), zone.getId(), level, timeToEntry);
+    }
+
+    return results;
+}
 
