@@ -17,8 +17,8 @@ public:
     explicit AlertManager(std::function<std::string()> makeAlertId);
 
     std::optional<AlertEvent> update(const ZoneCheckResult &result);
-    std::vector<AlertEvent> closeTrack(const std::string &icao);
-    std::vector<AlertEvent> closeZone(const std::string &zoneId);
+    std::vector<AlertEvent> handleTrackDisappearance(const std::string &icao);
+    std::vector<AlertEvent> handleZoneDeactivation(const std::string &zoneId);
 
 private:
     struct State
@@ -33,5 +33,4 @@ private:
     std::map<Key, State> states_;
     std::function<std::string()> makeAlertId_;
 };
-
 
