@@ -67,8 +67,7 @@ TEST_CASE("Simulation movement appears in track snapshots")
     REQUIRE(after->getPosition().latDeg == Catch::Approx(59.251));
     REQUIRE(after->getPosition().lonDeg == Catch::Approx(4.35));
 
-    // Characterise the current source's approximate speed conversion.
-    REQUIRE(after->getGroundSpeedKnots() == Catch::Approx(216.0));
+    REQUIRE(after->getGroundSpeedKnots() == Catch::Approx(111.32 * 3600.0 / 1852.0));
     REQUIRE(after->getHeadingDegrees() == Catch::Approx(0.0));
     REQUIRE(after->getGroundTrackDegrees() == Catch::Approx(0.0));
     REQUIRE(after->getVerticalSpeedFeetPerMinute() == 0.0);

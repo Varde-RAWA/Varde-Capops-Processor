@@ -51,6 +51,7 @@ void ProcessorApp::initializeSources(const Configuration &config)
 
     if (simulationMode_)
     {
+        radarSimulator_ = std::make_unique<RadarSimulator>(config.grid());
         radarSimulator_->initializeFlights(
             {{60.0, 4.6}}, // Start: latitude 60.0°, longitude 4.6° from Scenario 1.
             {{60.0, 5.6}}, // Destination: latitude 60.0°, longitude 5.6° from Scenario 1.
