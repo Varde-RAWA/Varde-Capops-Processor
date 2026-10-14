@@ -1,9 +1,19 @@
 #include "publish/RedisPublisher.hpp"
 #include "publish/ProtoMapper.hpp"
 
-RedisPublisher::RedisPublisher(const Configuration &config)
-    : config_(config), redis_(config.getRedisUrl()),
-      channel_(config.getRedisChannel()){}
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+RedisPublisher::RedisPublisher(
+    const Configuration &config,
+    std::string alertStream)
+    : config_(config),
+      redis_(config.getRedisUrl()),
+      channel_(config.getRedisChannel()),
+      alertStream_(std::move(alertStream))
+{
+}
 
 void RedisPublisher::publish(const ProcessingResult &result)
 {
@@ -12,27 +22,27 @@ void RedisPublisher::publish(const ProcessingResult &result)
     std::string serialized;
     bool ok = proto.SerializeToString(&serialized);
 
-    if (!ok)
-    {
+    if (!ok){
         throw std::runtime_error("Failed to serialize FlightDataProtof");
     }
 
-    // std::cout << "\n--- PUBLISH UPDATE ---\n";
-
-    // // Tracks
-    // std::cout << "\nTracks (" << result.tracks.size() << "):\n";
-    // std::cout << std::fixed << std::setprecision(5);
-
-    // for (const auto &track : result.tracks)
-    // {
-    //     const auto &pos = track.getPosition();
-
-    //     std::cout << "  " << track.getIcao() << " @ (" << pos.latDeg << ", " << pos.lonDeg << ")"
-    //               << " time=" << track.getTimestamp() << "\n";
-    // }
-
-
-    // std::cout << "----------------------\n";
-
     redis_.publish(channel_, serialized);
+}
+
+std::string RedisPublisher::publishAlert(const AlertEvent &event)
+{
+    const auto proto = mapToProto(event, config_);
+
+    std::string serialized;
+    if (!proto.SerializeToString(&serialized))
+    {
+        throw std::runtime_error("Failed to serialize ZoneAlertEvent.");
+    }
+
+    const std::vector<std::pair<std::string, std::string>> fields{
+        {"data", serialized}
+    };
+
+    constexpr long long maximumStreamLength = 10000;
+    return redis_.xadd(alertStream_, "*", fields.begin(), fields.end(), maximumStreamLength, true);
 }

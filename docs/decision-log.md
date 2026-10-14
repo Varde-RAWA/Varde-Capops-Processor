@@ -85,5 +85,32 @@ Keeping state for each aircraft–zone pair supports independent alerts when an 
 
 ### Consequences
 
-The processor has separate components for calculating warning levels and managing alerts across cycles. Connecting these components to the processing loop and Redis publication remains integration work.
+`ProcessorApp` now evaluates current aircraft through `VardeEngine`, passes the results to `AlertManager`, and publishes the resulting alert events.
 
+The demonstration polygon was removed from the application. Zone loading remains pending, so the processor currently publishes aircraft snapshots but produces no zone alerts.
+
+## Decision 003: Publish alert transitions through Redis Streams
+
+**Date:** 14.10.26
+**Status:** Complete
+
+### Decision
+
+Map `AlertEvent` to the agreed `ZoneAlertEvent` Protobuf message and append
+it to the `varde:alerts` Redis Stream. Store the serialized message in the
+`data` field and approximately cap the stream at 10,000 entries.
+
+Publish events when an alert opens, changes level, or closes. Keep the
+same alert ID throughout its lifetime.
+
+### Reason
+
+This follows the shared event contract and allows consumers to read alert
+transitions from the stream. Publishing transitions avoids repeating
+unchanged alerts every processing cycle.
+
+### Verification
+
+A manual run with the demonstration zone produced OPENED, LEVEL_CHANGED,
+and CLOSED events in Redis. The messages carried contract version 3 and
+the same alert ID throughout the alert's lifetime.

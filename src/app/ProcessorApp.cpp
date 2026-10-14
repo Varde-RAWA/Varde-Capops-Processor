@@ -1,18 +1,22 @@
 #include "app/ProcessorApp.hpp"
 
+#include "compute/AlertManager.hpp"
 #include "compute/ComputeData.hpp"
+#include "compute/VardeEngine.hpp"
 #include "config/Config.hpp"
+#include "domain/Zone.hpp"
 #include "domain/types/ProcessingResult.hpp"
 #include "ingest/IngestService.hpp"
 #include "publish/RedisPublisher.hpp"
-
-#include "sources/interfaces/ITrackSource.hpp"
-
-#include "sources/simulations/RadarSimulator.hpp"
-
 #include "sources/TrackSourceOpenSky.hpp"
 #include "sources/TrackSourceSimulated.hpp"
+#include "sources/interfaces/ITrackSource.hpp"
+#include "sources/simulations/RadarSimulator.hpp"
 
+#include <QUuid>
+#include <set>
+#include <utility>
+#include <vector>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
@@ -31,15 +35,64 @@ void ProcessorApp::run()
     ComputeData computeData(config);
     RedisPublisher publisher(config);
 
-    double timeStep = config.getTimestepSize();
-    auto sleepDuration = std::chrono::milliseconds(config.getLoopInterval());
+    VardeEngine engine;
+    AlertManager alertManager([]
+    {
+        return QUuid::createUuid()
+            .toString(QUuid::WithoutBraces)
+            .toStdString();
+    });
+
+    const std::vector<Zone> zones{};
+
+    std::set<std::string> previousAircraft;
+
+    const double timeStep = config.getTimestepSize();
+    const auto sleepDuration =
+        std::chrono::milliseconds(config.getLoopInterval());
 
     while (true)
     {
         if (simulationMode_)
             tickSimulators(timeStep);
+
         processTrackUpdates(ingestService, computeData);
-        publishResults(computeData, publisher);
+
+        const ProcessingResult result =
+            computeData.collectProcessingResult();
+
+        publisher.publish(result);
+
+        std::set<std::string> currentAircraft;
+
+        for (const Track &track : result.tracks)
+        {
+            currentAircraft.insert(track.getIcao());
+
+            const auto checks = engine.evaluateTrack(track, zones);
+
+            for (const ZoneCheckResult &check : checks)
+            {
+                const auto event = alertManager.update(check);
+
+                if (event)
+                    publisher.publishAlert(*event);
+            }
+        }
+
+        for (const std::string &icao : previousAircraft)
+        {
+            if (currentAircraft.count(icao) == 0)
+            {
+                const auto events =
+                    alertManager.handleTrackDisappearance(icao);
+
+                for (const AlertEvent &event : events)
+                    publisher.publishAlert(event);
+            }
+        }
+
+        previousAircraft = std::move(currentAircraft);
 
         std::this_thread::sleep_for(sleepDuration);
     }
@@ -93,11 +146,4 @@ void ProcessorApp::processTrackUpdates(IngestService &ingestService, ComputeData
     {
         computeData.handleTrackUpdate(track);
     }
-}
-
-
-void ProcessorApp::publishResults(ComputeData &computeData, RedisPublisher &publisher)
-{
-    ProcessingResult result = computeData.collectProcessingResult();
-    publisher.publish(result);
 }

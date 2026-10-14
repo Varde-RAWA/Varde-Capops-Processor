@@ -21,7 +21,6 @@ class ProcessorApp
     void initializeSources(const Configuration &config);
     void tickSimulators(double timeStep);
     void processTrackUpdates(IngestService &ingestService, ComputeData &computeData);
-    void publishResults(ComputeData &computeData, RedisPublisher &publisher);
 
     std::unique_ptr<ITrackSource> trackSource_;
 
