@@ -3,6 +3,9 @@
 
 #include "config/Config.hpp"
 #include "domain/types/ProcessingResult.hpp"
+#include "compute/AlertManager.hpp"
+
+
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
@@ -114,5 +117,35 @@ inline Configuration createTestConfigApi()
 
     return config;
 }
+
+inline AlertManager createTestAlertManager()
+{
+    return AlertManager(
+        [nextId = 0]() mutable
+        {
+            return "alert-" + std::to_string(++nextId);
+        }
+    );
+}
+
+inline ZoneCheckResult makeAlertCheck(
+    WarningLevel level,
+    const std::string &icao = "SIM-0",
+    const std::string &zoneId = "D-101")
+{
+    // Example times within the warning ranges, not the thresholds.
+    constexpr double examplePredictedEntrySeconds = 60.0;
+    constexpr double exampleImminentEntrySeconds = 20.0;
+
+    std::optional<double> entryTime;
+
+    if (level == WarningLevel::PREDICTED)
+        entryTime = examplePredictedEntrySeconds;
+    else if (level == WarningLevel::IMMINENT)
+        entryTime = exampleImminentEntrySeconds;
+
+    return ZoneCheckResult(icao, zoneId, level, entryTime);
+}
+
 
 #endif // TEST_HELPERS_HPP

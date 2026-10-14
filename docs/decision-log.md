@@ -60,24 +60,30 @@ The processor now collects and publishes individual aircraft snapshots without w
 Restricted-zone checks and Varde alerts will be implemented separately. The Protobuf schema migration and replacement of the random simulator with scripted scenarios remain deferred.
 
 
-## Decision 002: Give zone assessment its own engine
+## Decision 002: Separate zone assessment and alert lifecycle handling
 
 **Date:** 13.10.26
 **Status:** In progress
 
 ### Context
 
-The inherited processor handles aircraft tracks, but it does not assess whether an aircraft is inside or approaching a restricted zone. Varde needs this assessment for each aircraft and active zone.
+Varde needs to detect whether an aircraft is inside or approaching an active zone. It also needs to maintain alerts across processing cycles, including the required delay before lowering a warning level.
 
 ### Decision
 
-Implement `VardeEngine` as the component that evaluates aircraft movement against zones. It uses the current `Track` to project the aircraft's path, checks that path against each supplied zone polygon, and returns the warning level and first entry time for each aircraft–zone pair.
+Implement `VardeEngine` as the component that projects an aircraft's movement and checks its path against the supplied zone polygons. It returns the computed warning level and first entry time for each aircraft–zone pair.
 
-The application will supply tracks and zones to the engine and handle the results. Zone assessment remains separate from acquiring aircraft data and publishing messages.
+Implement alert lifecycle handling in a separate `AlertManager`. It maintains the published warning level and alert state for each pair, producing events when an alert opens, changes level, or closes.
+
+The application supplies tracks and zones and handles publication of the resulting events.
 
 ### Reason
 
-Keeping the assessment in one component gives simulated and live aircraft the same warning logic. It also lets the zone calculations be tested before they are connected to the processing loop.
+Separating zone assessment from alert state allows the geometry calculations and alert transitions to be tested independently. Simulated and live aircraft can use the same assessment and alert logic.
 
+Keeping state for each aircraft–zone pair supports independent alerts when an aircraft approaches several zones.
 
+### Consequences
+
+The processor has separate components for calculating warning levels and managing alerts across cycles. Connecting these components to the processing loop and Redis publication remains integration work.
 
