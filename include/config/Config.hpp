@@ -31,6 +31,11 @@ class Configuration
     double getTimestepSize() const;
     int getLoopInterval() const;
 
+    std::string getZoneSource() const;
+    std::string getZoneApiUrl() const;
+    std::string getZoneFile() const;
+    int getZoneRefreshSeconds() const;
+
   private:
     GridConfig grid_;
     int protobufVersion_;
@@ -41,4 +46,9 @@ class Configuration
     int numFlights_;
     double timestepSize_;
     int loopIntervalMs_;
+
+    std::string zoneSource_ = "file";
+    std::string zoneApiUrl_ = "http://localhost:5040/collections/restricted-areas/items";
+    std::string zoneFile_ = "data/zones.geojson";
+    int zoneRefreshSeconds_ = 30;
 };
