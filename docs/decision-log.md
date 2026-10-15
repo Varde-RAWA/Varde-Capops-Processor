@@ -114,3 +114,33 @@ unchanged alerts every processing cycle.
 A manual run with the demonstration zone produced OPENED, LEVEL_CHANGED,
 and CLOSED events in Redis. The messages carried contract version 3 and
 the same alert ID throughout the alert's lifetime.
+
+
+
+## Decision 004: Support API and local file zone sources
+
+**Date:** 15.10.26
+**Status:** Implemented
+
+### Decision
+
+Load zones from either the Geo Service API or a local GeoJSON file,
+selected in configuration. Both sources use the same parser.
+
+Fetch API updates in the background every 30 seconds by default.
+Keep cached zones if fetching fails, using the local file at startup.
+
+### Reason
+
+This allows development without the Geo Service and lets aircraft
+processing continue during requests or temporary API failures.
+
+### Consequences
+
+A valid local zone file is currently required even in API mode.
+Cached zones may become outdated while the service is unavailable.
+
+### Verification
+
+Parsing and file-loading tests pass. Automated HTTP and refresh-failure
+tests remain pending.
