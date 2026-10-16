@@ -12,6 +12,7 @@
 #include "sources/TrackSourceSimulated.hpp"
 #include "sources/interfaces/ITrackSource.hpp"
 #include "sources/simulations/RadarSimulator.hpp"
+#include "sources/ZoneSourceGeoService.hpp"
 
 #include <QUuid>
 #include <set>
@@ -21,6 +22,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+#include <future>
+#include <optional>
 
 ProcessorApp::ProcessorApp() = default;
 ProcessorApp::~ProcessorApp() = default;
@@ -43,7 +46,12 @@ void ProcessorApp::run()
             .toStdString();
     });
 
-    const std::vector<Zone> zones{};
+    // Used in file mode and until the first API response arrives.
+    std::vector<Zone> zones = ZoneSourceGeoService::loadFile(config.getZoneFile());
+
+    std::future<std::vector<Zone>> pendingZones;
+    auto nextZoneRefresh = std::chrono::steady_clock::now();
+    const auto zoneRefreshInterval =std::chrono::seconds(config.getZoneRefreshSeconds());
 
     std::set<std::string> previousAircraft;
 
@@ -53,6 +61,68 @@ void ProcessorApp::run()
 
     while (true)
     {
+        if (config.getZoneSource() == "api")
+{
+    const auto now = std::chrono::steady_clock::now();
+
+    if (!pendingZones.valid() && now >= nextZoneRefresh)
+        {
+            pendingZones = std::async(
+                std::launch::async,
+                [url = config.getZoneApiUrl()]
+                {
+                    ZoneSourceGeoService source;
+                    return source.getActiveZones(url);
+                });
+            
+            nextZoneRefresh = now + zoneRefreshInterval;
+        }
+    
+        if (pendingZones.valid() &&
+            pendingZones.wait_for(std::chrono::seconds(0)) ==
+                std::future_status::ready)
+        {
+            std::optional<std::vector<Zone>> refreshed;
+        
+            try
+            {
+                refreshed = pendingZones.get();
+            }
+            catch (const std::exception &error)
+            {
+                std::cerr
+                    << "Zone refresh failed; keeping cached zones: "
+                    << error.what() << '\n';
+            }
+        
+            if (refreshed)
+            {
+                std::set<std::string> activeIds;
+            
+                for (const Zone &zone : *refreshed)
+                    activeIds.insert(zone.getId());
+            
+                // A successfully refreshed set may deactivate zones.
+                for (const Zone &oldZone : zones)
+                {
+                    if (activeIds.count(oldZone.getId()) == 0)
+                    {
+                        const auto events =
+                            alertManager.handleZoneDeactivation(
+                                oldZone.getId());
+                            
+                        for (const AlertEvent &event : events)
+                            publisher.publishAlert(event);
+                    }
+                }
+            
+                zones = std::move(*refreshed);
+            }
+        }
+    }
+
+
+
         if (simulationMode_)
             tickSimulators(timeStep);
 

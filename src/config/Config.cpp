@@ -131,6 +131,27 @@ void Configuration::load(const std::string &path)
             if (key == "loopIntervalMs")
                 loopIntervalMs_ = std::stoi(value);
         }
+        else if (currentSection == "zones")
+        {
+            if (key == "source")
+            {
+                if (value != "api" && value != "file")
+                    throw std::invalid_argument(
+                        "Zone source must be 'api' or 'file'.");
+                zoneSource_ = value;
+            }
+            else if (key == "apiUrl")
+                zoneApiUrl_ = value;
+            else if (key == "file")
+                zoneFile_ = value;
+            else if (key == "refreshSeconds")
+            {
+                zoneRefreshSeconds_ = std::stoi(value);
+                if (zoneRefreshSeconds_ <= 0)
+                    throw std::invalid_argument(
+                        "Zone refresh interval must be positive.");
+            }
+        }
     }
 }
 
@@ -190,4 +211,25 @@ void GridConfig::computeDimensions()
 
     cols =
         std::max(1, static_cast<int>(std::round(effectiveLonRange / (effectiveLatRange / rows))));
+}
+
+
+std::string Configuration::getZoneSource() const
+{
+    return zoneSource_;
+}
+
+std::string Configuration::getZoneApiUrl() const
+{
+    return zoneApiUrl_;
+}
+
+std::string Configuration::getZoneFile() const
+{
+    return zoneFile_;
+}
+
+int Configuration::getZoneRefreshSeconds() const
+{
+    return zoneRefreshSeconds_;
 }
