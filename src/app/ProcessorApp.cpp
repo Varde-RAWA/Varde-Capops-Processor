@@ -8,6 +8,7 @@
 #include "domain/types/ProcessingResult.hpp"
 #include "ingest/IngestService.hpp"
 #include "publish/RedisPublisher.hpp"
+#include "publish/SerializationError.hpp"
 #include "sources/TrackSourceOpenSky.hpp"
 #include "sources/TrackSourceSimulated.hpp"
 #include "sources/interfaces/ITrackSource.hpp"
@@ -174,18 +175,39 @@ void ProcessorApp::run()
             try
             {
                 // Snapshots are current state: after an outage, send the latest one.
-                publisher.publish(result);
-            
-                // Limit replay work so a large backlog does not monopolize the loop.
+                // A failed snapshot can be replaced by the next cycle's snapshot.
+                try
+                {
+                    publisher.publish(result);
+                }
+                catch (const SerializationError &error)
+                {
+                    std::cerr << "Skipping flight snapshot: " << error.what() << '\n';
+                }
+
                 constexpr std::size_t maxAlertsPerCycle = 100;
                 std::size_t sent = 0;
-            
+
                 while (!pendingAlerts.empty() && sent < maxAlertsPerCycle)
                 {
-                    publisher.publishAlert(pendingAlerts.front());
-                    pendingAlerts.pop_front(); // Remove only after Redis replied.
+                    try
+                    {
+                        publisher.publishAlert(pendingAlerts.front());
+                        pendingAlerts.pop_front(); // Redis replied successfully.
+                    }
+                    catch (const SerializationError &error)
+                    {
+                        std::cerr << "Cannot serialize alert "
+                                  << pendingAlerts.front().alertId << ": "
+                                  << error.what() << '\n';
+                    
+                        // Only do this if you accept losing this alert:
+                        pendingAlerts.pop_front();
+                    }
+                
                     ++sent;
                 }
+                
             
                 if (redisWasUnavailable)
                     std::cerr << "Redis publication recovered\n";
