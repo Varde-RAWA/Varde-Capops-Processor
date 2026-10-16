@@ -24,6 +24,7 @@
 #include <thread>
 #include <future>
 #include <optional>
+#include <deque>
 
 ProcessorApp::ProcessorApp() = default;
 ProcessorApp::~ProcessorApp() = default;
@@ -54,6 +55,12 @@ void ProcessorApp::run()
     const auto zoneRefreshInterval =std::chrono::seconds(config.getZoneRefreshSeconds());
 
     std::set<std::string> previousAircraft;
+
+    using Clock = std::chrono::steady_clock;
+
+    std::deque<AlertEvent> pendingAlerts;
+    Clock::time_point nextRedisAttempt{};
+    bool redisWasUnavailable = false;
 
     const double timeStep = config.getTimestepSize();
     const auto sleepDuration =
@@ -112,7 +119,7 @@ void ProcessorApp::run()
                                 oldZone.getId());
                             
                         for (const AlertEvent &event : events)
-                            publisher.publishAlert(event);
+                            pendingAlerts.push_back(event);
                     }
                 }
             
@@ -131,8 +138,6 @@ void ProcessorApp::run()
         const ProcessingResult result =
             computeData.collectProcessingResult();
 
-        publisher.publish(result);
-
         std::set<std::string> currentAircraft;
 
         for (const Track &track : result.tracks)
@@ -146,7 +151,7 @@ void ProcessorApp::run()
                 const auto event = alertManager.update(check);
 
                 if (event)
-                    publisher.publishAlert(*event);
+                    pendingAlerts.push_back(*event);
             }
         }
 
@@ -158,12 +163,45 @@ void ProcessorApp::run()
                     alertManager.handleTrackDisappearance(icao);
 
                 for (const AlertEvent &event : events)
-                    publisher.publishAlert(event);
+                    pendingAlerts.push_back(event);
             }
         }
 
         previousAircraft = std::move(currentAircraft);
 
+        if (Clock::now() >= nextRedisAttempt)
+        {
+            try
+            {
+                // Snapshots are current state: after an outage, send the latest one.
+                publisher.publish(result);
+            
+                // Limit replay work so a large backlog does not monopolize the loop.
+                constexpr std::size_t maxAlertsPerCycle = 100;
+                std::size_t sent = 0;
+            
+                while (!pendingAlerts.empty() && sent < maxAlertsPerCycle)
+                {
+                    publisher.publishAlert(pendingAlerts.front());
+                    pendingAlerts.pop_front(); // Remove only after Redis replied.
+                    ++sent;
+                }
+            
+                if (redisWasUnavailable)
+                    std::cerr << "Redis publication recovered\n";
+            
+                redisWasUnavailable = false;
+            }
+            catch (const sw::redis::Error &error)
+            {
+                if (!redisWasUnavailable)
+                    std::cerr << "Redis publication failed: "
+                              << error.what() << '\n';
+            
+                redisWasUnavailable = true;
+                nextRedisAttempt = Clock::now() + std::chrono::seconds(1);
+            }
+        }
         std::this_thread::sleep_for(sleepDuration);
     }
 }
