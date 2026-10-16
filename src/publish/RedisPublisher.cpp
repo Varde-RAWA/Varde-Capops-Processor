@@ -1,5 +1,6 @@
 #include "publish/RedisPublisher.hpp"
 #include "publish/ProtoMapper.hpp"
+#include "publish/SerializationError.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -20,10 +21,9 @@ void RedisPublisher::publish(const ProcessingResult &result)
     varde::events::FlightDataProto proto = mapToProto(result, config_);
 
     std::string serialized;
-    bool ok = proto.SerializeToString(&serialized);
-
-    if (!ok){
-        throw std::runtime_error("Failed to serialize FlightDataProtof");
+    if (!proto.SerializeToString(&serialized))
+    {
+    throw SerializationError("Failed to serialize FlightDataProto");
     }
 
     redis_.publish(channel_, serialized);
@@ -36,7 +36,7 @@ std::string RedisPublisher::publishAlert(const AlertEvent &event)
     std::string serialized;
     if (!proto.SerializeToString(&serialized))
     {
-        throw std::runtime_error("Failed to serialize ZoneAlertEvent.");
+    throw SerializationError("Failed to serialize ZoneAlertEvent");
     }
 
     const std::vector<std::pair<std::string, std::string>> fields{
