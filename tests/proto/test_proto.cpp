@@ -85,3 +85,74 @@ TEST_CASE("Protobuf serialization with empty result")
     REQUIRE(deserializedProto.trackdata().totalaircraftcount() == 0);
     REQUIRE(deserializedProto.trackdata().tracks_size() == 0);
 }
+
+TEST_CASE("Zone alert Protobuf preserves fields and optional entry time")
+{
+    const Configuration config = createTestConfig();
+
+    AlertEvent event{
+        "alert-1",
+        "SIM-0",
+        "D-101",
+        WarningLevel::PREDICTED,
+        60.0,
+        AlertEventType::OPENED
+    };
+
+    auto expectedLevel = varde::events::WARNING_LEVEL_PREDICTED;
+    auto expectedType = varde::events::ZONE_ALERT_EVENT_OPENED;
+
+    SECTION("Opened alert")
+    {
+    }
+
+    SECTION("Level changed")
+    {
+        event.level = WarningLevel::IMMINENT;
+        event.timeToEntrySeconds = 20.0;
+        event.type = AlertEventType::LEVEL_CHANGED;
+
+        expectedLevel = varde::events::WARNING_LEVEL_IMMINENT;
+        expectedType = varde::events::ZONE_ALERT_EVENT_LEVEL_CHANGED;
+    }
+
+    SECTION("Aircraft already inside")
+    {
+        event.level = WarningLevel::INFRINGEMENT;
+        event.timeToEntrySeconds.reset();
+
+        expectedLevel = varde::events::WARNING_LEVEL_INFRINGEMENT;
+    }
+
+    SECTION("Closed alert")
+    {
+        event.level = WarningLevel::NONE;
+        event.timeToEntrySeconds.reset();
+        event.type = AlertEventType::CLOSED;
+
+        expectedLevel = varde::events::WARNING_LEVEL_NONE;
+        expectedType = varde::events::ZONE_ALERT_EVENT_CLOSED;
+    }
+
+    const auto proto = mapToProto(event, config);
+
+    std::string bytes;
+    REQUIRE(proto.SerializeToString(&bytes));
+
+    varde::events::ZoneAlertEvent decoded;
+    REQUIRE(decoded.ParseFromString(bytes));
+
+    REQUIRE(decoded.metadata().version() == 3);
+    REQUIRE_FALSE(decoded.metadata().timestamp().empty());
+    REQUIRE(decoded.alertid() == event.alertId);
+    REQUIRE(decoded.icao24() == event.icao);
+    REQUIRE(decoded.zoneid() == event.zoneId);
+    REQUIRE(decoded.level() == expectedLevel);
+    REQUIRE(decoded.eventtype() == expectedType);
+    REQUIRE(decoded.has_timetoentryseconds() == event.timeToEntrySeconds.has_value());
+
+    if (event.timeToEntrySeconds)
+    {
+        REQUIRE(decoded.timetoentryseconds() == *event.timeToEntrySeconds);
+    }
+}

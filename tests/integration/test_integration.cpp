@@ -187,6 +187,6 @@ TEST_CASE("Simulated aircraft passes through ingest, computation and Protobuf")
     REQUIRE(aircraft.position().latitudedegrees() == Catch::Approx(59.251));
     REQUIRE(aircraft.position().longitudedegrees() == Catch::Approx(4.35));
     REQUIRE(aircraft.timestamp() == tracks[0].getTimestamp());
-    REQUIRE(aircraft.velocity().groundspeedknots() == Catch::Approx(216.0));
+    REQUIRE(aircraft.velocity().groundspeedknots() == Catch::Approx(111.32 * 3600.0 / 1852.0));
 
 }
