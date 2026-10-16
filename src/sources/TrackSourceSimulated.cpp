@@ -12,6 +12,9 @@ TrackSourceSimulated::TrackSourceSimulated(RadarSimulator &simulator) : simulato
 
 std::optional<Track> TrackSourceSimulated::getTrack(const std::string &icao) const
 {
+    constexpr double metresPerLatitudeDegree = 111320.0;
+    constexpr double metresPerNauticalMile = 1852.0;
+    constexpr double secondsPerHour = 3600.0;
 
     if (!simulator_.containsFlight(icao))
     {
@@ -24,6 +27,7 @@ std::optional<Track> TrackSourceSimulated::getTrack(const std::string &icao) con
     std::string timestamp = createIsoTimestamp();
     Position position{posSim.first, posSim.second};
     // Derive a deterministic cruise altitude per flight from its ICAO id
+    //this is just for simulation purposes, in reality the altitude would be part of the track data
     std::hash<std::string> hasher;
     double altitudeFeet = 25000.0 + (hasher(icao) % 150) * 100.0;
 
@@ -32,25 +36,25 @@ std::optional<Track> TrackSourceSimulated::getTrack(const std::string &icao) con
     
     // Simulator velocity is latitude/longitude degrees per second.
     // Convert both components to metres per second.
-    const double northMetresPerSecond = velSim.first * 111320.0;
+    const double northMetresPerSecond = velSim.first * metresPerLatitudeDegree;
     const double eastMetresPerSecond =
-        velSim.second * 111320.0 * std::cos(latitudeRadians);
-    
+        velSim.second * metresPerLatitudeDegree * std::cos(latitudeRadians);
+
     // One knot is one nautical mile (1852 metres) per hour.
     const double groundSpeedKnots =
         std::hypot(northMetresPerSecond, eastMetresPerSecond)
-        * 3600.0 / 1852.0;
-    
+        * secondsPerHour / metresPerNauticalMile;
+
     const double verticalSpeed = 0.0;
-    
+
     // Compass direction: north = 0°, east = 90°.
     double groundTrackDegrees =
         std::atan2(eastMetresPerSecond, northMetresPerSecond)
         * 180.0 / pi;
-    
+
     if (groundTrackDegrees < 0.0)
         groundTrackDegrees += 360.0;
-    
+
     const double headingDegrees = groundTrackDegrees;
 
     return Track(icao, timestamp, position, altitudeFeet, groundSpeedKnots, verticalSpeed,
