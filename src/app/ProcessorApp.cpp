@@ -11,21 +11,21 @@
 #include "publish/SerializationError.hpp"
 #include "sources/TrackSourceOpenSky.hpp"
 #include "sources/TrackSourceSimulated.hpp"
+#include "sources/ZoneSourceGeoService.hpp"
 #include "sources/interfaces/ITrackSource.hpp"
 #include "sources/simulations/RadarSimulator.hpp"
-#include "sources/ZoneSourceGeoService.hpp"
 
 #include <QUuid>
-#include <set>
-#include <utility>
-#include <vector>
 #include <chrono>
+#include <deque>
+#include <future>
 #include <iostream>
+#include <optional>
+#include <set>
 #include <stdexcept>
 #include <thread>
-#include <future>
-#include <optional>
-#include <deque>
+#include <utility>
+#include <vector>
 
 ProcessorApp::ProcessorApp() = default;
 ProcessorApp::~ProcessorApp() = default;
@@ -41,20 +41,31 @@ void ProcessorApp::run()
     RedisPublisher publisher(config);
 
     VardeEngine engine;
-    AlertManager alertManager([]
-    {
-        return QUuid::createUuid()
-            .toString(QUuid::WithoutBraces)
-            .toStdString();
-    });
+    AlertManager alertManager(
+        [] { return QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString(); });
 
     // Used in file mode and until the first API response arrives.
     std::vector<Zone> zones = ZoneSourceGeoService::loadFile(config.getZoneFile());
 
+    std::optional<std::vector<Zone>> avoidanceAreas;
+
+    try
+    {
+        avoidanceAreas = ZoneSourceGeoService::loadFile(config.getAvoidanceFile());
+    }
+    catch (const std::exception &error)
+    {
+        std::cerr << "Avoidance data unavailable; continuing zone warnings: " << error.what()
+                  << '\n';
+    }
+
+    std::future<std::vector<Zone>> pendingAvoidanceAreas;
+    auto nextAvoidanceRefresh = std::chrono::steady_clock::now();
+
     std::future<std::vector<Zone>> pendingZones;
     bool zoneRefreshHadFailed = false;
     auto nextZoneRefresh = std::chrono::steady_clock::now();
-    const auto zoneRefreshInterval =std::chrono::seconds(config.getZoneRefreshSeconds());
+    const auto zoneRefreshInterval = std::chrono::seconds(config.getZoneRefreshSeconds());
 
     std::set<std::string> previousAircraft;
 
@@ -72,100 +83,126 @@ void ProcessorApp::run()
             ++droppedAlerts;
 
             if (droppedAlerts == 1 || droppedAlerts % 100 == 0)
-                std::cerr << "Alert queue full; dropped "
-                          << droppedAlerts << " alerts\n";
+                std::cerr << "Alert queue full; dropped " << droppedAlerts << " alerts\n";
         }
 
         pendingAlerts.push_back(event);
     };
 
-
-
     Clock::time_point nextRedisAttempt{};
     bool redisWasUnavailable = false;
 
     const double timeStep = config.getTimestepSize();
-    const auto sleepDuration =
-        std::chrono::milliseconds(config.getLoopInterval());
+    const auto sleepDuration = std::chrono::milliseconds(config.getLoopInterval());
 
     while (true)
     {
         if (config.getZoneSource() == "api")
-{
-    const auto now = std::chrono::steady_clock::now();
+        {
+            const auto now = std::chrono::steady_clock::now();
 
-    if (!pendingZones.valid() && now >= nextZoneRefresh)
-        {
-            pendingZones = std::async(
-                std::launch::async,
-                [url = config.getZoneApiUrl()]
-                {
-                    ZoneSourceGeoService source;
-                    return source.getActiveZones(url);
-                });
-            
-            nextZoneRefresh = now + zoneRefreshInterval;
-        }
-    
-        if (pendingZones.valid() &&
-            pendingZones.wait_for(std::chrono::seconds(0)) ==
-                std::future_status::ready)
-        {
-            std::optional<std::vector<Zone>> refreshed;
-        
-            try
+            if (!pendingZones.valid() && now >= nextZoneRefresh)
             {
-                refreshed = pendingZones.get();
+                pendingZones = std::async(std::launch::async,
+                                          [url = config.getZoneApiUrl()]
+                                          {
+                                              ZoneSourceGeoService source;
+                                              return source.getActiveZones(url);
+                                          });
+
+                nextZoneRefresh = now + zoneRefreshInterval;
             }
-            catch (const std::exception &error)
+
+            if (pendingZones.valid() &&
+                pendingZones.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
             {
-                zoneRefreshHadFailed = true;
-                std::cerr
-                    << "Zone refresh failed; keeping cached zones: "
-                    << error.what() << '\n';
-            }
-        
-            if (refreshed)
-            {
-                std::set<std::string> activeIds;
-            
-                for (const Zone &zone : *refreshed)
-                    activeIds.insert(zone.getId());
-            
-                // A successfully refreshed set may deactivate zones.
-                for (const Zone &oldZone : zones)
+                std::optional<std::vector<Zone>> refreshed;
+
+                try
                 {
-                    if (activeIds.count(oldZone.getId()) == 0)
+                    refreshed = pendingZones.get();
+                }
+                catch (const std::exception &error)
+                {
+                    zoneRefreshHadFailed = true;
+                    std::cerr << "Zone refresh failed; keeping cached zones: " << error.what()
+                              << '\n';
+                }
+
+                if (refreshed)
+                {
+                    std::set<std::string> activeIds;
+
+                    for (const Zone &zone : *refreshed)
+                        activeIds.insert(zone.getId());
+
+                    // A successfully refreshed set may deactivate zones.
+                    for (const Zone &oldZone : zones)
                     {
-                        const auto events =
-                            alertManager.handleZoneDeactivation(
-                                oldZone.getId());
-                            
-                        for (const AlertEvent &event : events)
-                            queueAlert(event);
+                        if (activeIds.count(oldZone.getId()) == 0)
+                        {
+                            const auto events =
+                                alertManager.handleZoneDeactivation(oldZone.getId());
+
+                            for (const AlertEvent &event : events)
+                                queueAlert(event);
+                        }
+                    }
+
+                    zones = std::move(*refreshed);
+
+                    if (zoneRefreshHadFailed)
+                    {
+                        std::cerr << "Zone refresh recovered; cached zones updated\n";
+                        zoneRefreshHadFailed = false;
                     }
                 }
-            
-                zones = std::move(*refreshed);
+            }
+        }
 
-                if (zoneRefreshHadFailed)
+        if (config.getZoneSource() == "api")
+        {
+            const auto now = std::chrono::steady_clock::now();
+
+            if (!pendingAvoidanceAreas.valid() && now >= nextAvoidanceRefresh)
+            {
+                pendingAvoidanceAreas = std::async(std::launch::async,
+                                                   [url = config.getAvoidanceApiUrl()]
+                                                   {
+                                                       ZoneSourceGeoService source;
+                                                       return source.getActiveZones(url);
+                                                   });
+
+                nextAvoidanceRefresh = now + zoneRefreshInterval;
+            }
+
+            if (pendingAvoidanceAreas.valid() &&
+                pendingAvoidanceAreas.wait_for(std::chrono::seconds(0)) ==
+                    std::future_status::ready)
+            {
+                try
                 {
-                    std::cerr << "Zone refresh recovered; cached zones updated\n";
-                    zoneRefreshHadFailed = false;
+                    // Replace the cache only after the complete fetch succeeds.
+                    avoidanceAreas = pendingAvoidanceAreas.get();
+
+                    std::cout << "Loaded " << avoidanceAreas->size() << " avoidance areas\n";
+                }
+                catch (const std::exception &error)
+                {
+                    std::cerr << "Avoidance refresh failed; "
+                              << (avoidanceAreas ? "keeping cached areas: "
+                                                 : "no avoidance data available: ")
+                              << error.what() << '\n';
                 }
             }
         }
-    }
-
-
 
         if (simulationMode_)
             tickSimulators(timeStep);
 
         processTrackUpdates(ingestService, computeData);
 
-        const ProcessingResult result =
-            computeData.collectProcessingResult();
+        const ProcessingResult result = computeData.collectProcessingResult();
 
         std::set<std::string> currentAircraft;
 
@@ -188,8 +225,7 @@ void ProcessorApp::run()
         {
             if (currentAircraft.count(icao) == 0)
             {
-                const auto events =
-                    alertManager.handleTrackDisappearance(icao);
+                const auto events = alertManager.handleTrackDisappearance(icao);
 
                 for (const AlertEvent &event : events)
                     queueAlert(event);
@@ -225,29 +261,26 @@ void ProcessorApp::run()
                     }
                     catch (const SerializationError &error)
                     {
-                        std::cerr << "Cannot serialize alert "
-                                  << pendingAlerts.front().alertId << ": "
-                                  << error.what() << '\n';
-                    
+                        std::cerr << "Cannot serialize alert " << pendingAlerts.front().alertId
+                                  << ": " << error.what() << '\n';
+
                         // Only do this if you accept losing this alert:
                         pendingAlerts.pop_front();
                     }
-                
+
                     ++sent;
                 }
 
-            
                 if (redisWasUnavailable)
                     std::cerr << "Redis publication recovered\n";
-            
+
                 redisWasUnavailable = false;
             }
             catch (const sw::redis::Error &error)
             {
                 if (!redisWasUnavailable)
-                    std::cerr << "Redis publication failed: "
-                              << error.what() << '\n';
-            
+                    std::cerr << "Redis publication failed: " << error.what() << '\n';
+
                 redisWasUnavailable = true;
                 nextRedisAttempt = Clock::now() + std::chrono::seconds(1);
             }
@@ -266,13 +299,10 @@ void ProcessorApp::initializeSources(const Configuration &config)
         radarSimulator_->initializeFlights(
             {{60.0, 4.6}}, // Start: latitude 60.0°, longitude 4.6° from Scenario 1.
             {{60.0, 5.6}}, // Destination: latitude 60.0°, longitude 5.6° from Scenario 1.
-            {
-                // Scenario speed: 360 knots (nautical miles per hour).
-                // Multiply by 1852 metres per nautical mile, then divide
-                // by 3600 seconds per hour to get 185.2 metres per second.
-                360.0 * 1852.0 / 3600.0
-            }
-);
+            {              // Scenario speed: 360 knots (nautical miles per hour).
+             // Multiply by 1852 metres per nautical mile, then divide
+             // by 3600 seconds per hour to get 185.2 metres per second.
+             360.0 * 1852.0 / 3600.0});
 
         trackSource_ = std::make_unique<TrackSourceSimulated>(*radarSimulator_);
         return;

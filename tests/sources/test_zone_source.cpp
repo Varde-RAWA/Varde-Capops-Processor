@@ -1,6 +1,7 @@
 #include "sources/ZoneSourceGeoService.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include "compute/VardeEngine.hpp"
 
 #include <QFile>
 #include <QJsonArray>
@@ -53,6 +54,25 @@ QByteArray makeZoneCollection(const QJsonArray &features)
         }
     ).toJson();
 }
+
+QJsonObject makeAvoidanceFeature()
+{
+    auto feature = makeZoneFeature("D-101", "DANGER", true);
+
+    // Simplified enlarged rectangle for testing.
+    feature["geometry"] = QJsonDocument::fromJson(R"json(
+        {"type":"Polygon","coordinates":[[
+            [4.9,59.9],
+            [5.3,59.9],
+            [5.3,60.1],
+            [4.9,60.1],
+            [4.9,59.9]
+        ]]}
+    )json").object();
+
+    return feature;
+}
+
 }
 
 TEST_CASE("Zone source parses active zones and preserves their information")
@@ -195,4 +215,65 @@ TEST_CASE("Zone source reports an unusable local file")
     REQUIRE_THROWS_AS(
         ZoneSourceGeoService::loadFile(path.toStdString()),
         std::runtime_error);
+}
+
+TEST_CASE("Avoidance geometry does not enlarge warning zones")
+{
+    const auto zones = ZoneSourceGeoService::parseActiveZones(
+        makeZoneCollection({
+            makeZoneFeature("D-101", "DANGER", true)
+        }));
+
+    const auto areas = ZoneSourceGeoService::parseActiveZones(
+        makeZoneCollection({makeAvoidanceFeature()}));
+
+    REQUIRE(zones.size() == 1);
+    REQUIRE(areas.size() == 1);
+    REQUIRE(areas.front().getId() == zones.front().getId());
+
+    // Inside the safety margin, outside the original restricted zone.
+    const Position inMargin{60.0, 4.95};
+
+    REQUIRE(areas.front().containsPosition(inMargin));
+    REQUIRE_FALSE(zones.front().containsPosition(inMargin));
+
+    // A stationary aircraft here must not generate a zone warning.
+    constexpr double altitudeFeet = 10000.0;
+    constexpr double groundSpeedKnots = 0.0;
+    constexpr double verticalSpeedFeetPerMinute = 0.0;
+    constexpr double headingDegrees = 90.0;
+    constexpr double groundTrackDegrees = 90.0;
+
+    const Track track(
+        "SIM-0", "2026-10-19T12:00:00Z",
+        inMargin, altitudeFeet, groundSpeedKnots, verticalSpeedFeetPerMinute,
+        headingDegrees, groundTrackDegrees);
+
+    const auto checks = VardeEngine{}.evaluateTrack(track, zones);
+
+    REQUIRE(checks.size() == 1);
+    REQUIRE(checks.front().getLevel() == WarningLevel::NONE);
+}
+
+TEST_CASE("Avoidance geometry can be loaded from an offline file")
+{
+    QTemporaryDir directory;
+    REQUIRE(directory.isValid());
+
+    const QString path =
+        directory.filePath("avoidance-areas.geojson");
+    const auto data =
+        makeZoneCollection({makeAvoidanceFeature()});
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::WriteOnly));
+    REQUIRE(file.write(data) == data.size());
+    file.close();
+
+    const auto areas =
+        ZoneSourceGeoService::loadFile(path.toStdString());
+
+    REQUIRE(areas.size() == 1);
+    REQUIRE(areas.front().getId() == "D-101");
+    REQUIRE(areas.front().containsPosition(Position{60.0, 4.95}));
 }

@@ -2,6 +2,8 @@
 #include "compute/Grid.hpp"
 #include "test_helpers.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <QFile>
+#include <QTemporaryDir>
 
 // ============================================================================
 // UTILITY/EDGE CASE TESTS
@@ -62,5 +64,31 @@ TEST_CASE("Loaded configuration produces a grid that locates aircraft")
     REQUIRE(grid.determineSector(outside) == -1);
 }
 
+TEST_CASE("Configuration loads avoidance source settings")
+{
+    QTemporaryDir directory;
+    REQUIRE(directory.isValid());
 
+    const QString path = directory.filePath("configuration.cfg");
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::WriteOnly));
+
+    const QByteArray data =
+        "[grid]\n"
+        "minLat=59\nmaxLat=61\nminLon=3\nmaxLon=7\n"
+        "[zones]\n"
+        "avoidanceApiUrl=http://example.test/avoidance/items\n"
+        "avoidanceFile=data/test-avoidance.geojson\n";
+
+    REQUIRE(file.write(data) == data.size());
+    file.close();
+
+    const Configuration config(path.toStdString());
+
+    REQUIRE(config.getAvoidanceApiUrl() ==
+            "http://example.test/avoidance/items");
+    REQUIRE(config.getAvoidanceFile() ==
+            "data/test-avoidance.geojson");
+}
 
