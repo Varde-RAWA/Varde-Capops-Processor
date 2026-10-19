@@ -60,6 +60,26 @@ void ProcessorApp::run()
     using Clock = std::chrono::steady_clock;
 
     std::deque<AlertEvent> pendingAlerts;
+    constexpr std::size_t maxPendingAlerts = 10'000;
+    std::size_t droppedAlerts = 0;
+
+    auto queueAlert = [&](const AlertEvent &event)
+    {
+        if (pendingAlerts.size() >= maxPendingAlerts)
+        {
+            pendingAlerts.pop_front(); // Make room by dropping the oldest.
+            ++droppedAlerts;
+
+            if (droppedAlerts == 1 || droppedAlerts % 100 == 0)
+                std::cerr << "Alert queue full; dropped "
+                          << droppedAlerts << " alerts\n";
+        }
+
+        pendingAlerts.push_back(event);
+    };
+
+
+
     Clock::time_point nextRedisAttempt{};
     bool redisWasUnavailable = false;
 
@@ -120,7 +140,7 @@ void ProcessorApp::run()
                                 oldZone.getId());
                             
                         for (const AlertEvent &event : events)
-                            pendingAlerts.push_back(event);
+                            queueAlert(event);
                     }
                 }
             
@@ -152,7 +172,7 @@ void ProcessorApp::run()
                 const auto event = alertManager.update(check);
 
                 if (event)
-                    pendingAlerts.push_back(*event);
+                    queueAlert(*event);
             }
         }
 
@@ -164,7 +184,7 @@ void ProcessorApp::run()
                     alertManager.handleTrackDisappearance(icao);
 
                 for (const AlertEvent &event : events)
-                    pendingAlerts.push_back(event);
+                    queueAlert(event);
             }
         }
 
@@ -207,7 +227,7 @@ void ProcessorApp::run()
                 
                     ++sent;
                 }
-                
+
             
                 if (redisWasUnavailable)
                     std::cerr << "Redis publication recovered\n";
