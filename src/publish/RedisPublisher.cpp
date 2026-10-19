@@ -23,8 +23,25 @@ void RedisPublisher::publish(const ProcessingResult &result)
     std::string serialized;
     if (!proto.SerializeToString(&serialized))
     {
-    throw SerializationError("Failed to serialize FlightDataProto");
+        throw SerializationError("Failed to serialize FlightDataProto");
     }
+
+    const std::vector<std::pair<std::string, std::string>> fields{
+        {"data", serialized}
+    };
+
+    constexpr const char *trackStream = "varde:tracks";
+    constexpr long long maximumSnapshots = 10'000;
+    constexpr bool approximateTrimming = true;
+
+    // This is just to save flight snapshots in the redis stream.
+    redis_.xadd(
+        trackStream,
+        "*",
+        fields.begin(),
+        fields.end(),
+        maximumSnapshots,
+        approximateTrimming);
 
     redis_.publish(channel_, serialized);
 }

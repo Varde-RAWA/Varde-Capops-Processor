@@ -144,3 +144,33 @@ Cached zones may become outdated while the service is unavailable.
 
 Parsing and file-loading tests pass. Automated HTTP and refresh-failure
 tests remain pending.
+
+
+## Decision 005: Buffer alerts during Redis outages
+
+**Date:** 19.10.26
+**Status:** Implemented
+
+### Decision
+
+Queue alert events in memory until Redis publication succeeds.
+Limit the pending queue to 10,000 alerts and publish at most 100
+queued alerts per processing cycle.
+
+If the queue is full, drop the oldest alert to make room for the
+newest and log the loss.
+
+### Reason
+
+Allow aircraft processing and warning calculations to continue
+during Redis outages. Bound memory usage during prolonged outages
+and limit the backlog processed in each cycle.
+
+### Consequences
+
+Queued alerts are retried after Redis recovers. The queue is not
+persistent, so pending alerts are lost if the processor exits.
+
+Alerts can also be lost when the queue reaches its limit.
+A serialization failure causes the affected alert to be logged
+and discarded.

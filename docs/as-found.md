@@ -144,4 +144,3 @@ The project uses Catch2, with tests grouped by component:
 Coverage limitations: Redis-related tests accept exceptions and therefore can pass without successful publication. No subscriber verifies receipt of a message. The suite does not directly test OpenSky retrieval, live Open-Meteo responses, `RadarSimulator`, or `IngestService`.
 
 Verification: The complete `backend_tests` executable was run locally, and all tests passed.
-
