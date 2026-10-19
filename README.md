@@ -25,22 +25,23 @@ Alert levels rise immediately. A decrease requires three consecutive checks belo
 
 ## Redis setup
 
-If the Redis container already exists, start it:
+The shared Varde Docker Compose project manages the Redis container named `redis`.
+From this repository, create or start that service with:
 
 ```sh
-docker start varde-redis
+docker compose -f ../Varde/docker-compose.yml up -d --no-deps redis
 ```
 
-Otherwise, create it once:
+If the container already exists, you can also start it directly:
 
 ```sh
-docker run -d --name varde-redis -p 127.0.0.1:6379:6379 redis:7
+docker start redis
 ```
 
 Docker must be running before either command. Check the connection:
 
 ```sh
-docker exec varde-redis redis-cli ping
+docker exec redis redis-cli ping
 ```
 
 The response should be `PONG`. The processor's local connection is configured in `configuration.cfg`:
@@ -137,7 +138,10 @@ The current application initializes one predefined eastward flight in `Processor
 
 `loopIntervalMs=500` adds a half-second pause between processing cycles. Zone fetching has its own refresh interval; it does not make an HTTP request every cycle.
 
-If the processor runs inside Docker, configure Redis and Geo Service hostnames reachable from that container. `localhost` then refers to the processor container itself.
+If the processor runs inside Docker, connect it to the same Docker network as Redis
+and use `redisUrl=tcp://redis:6379?connect_timeout=200ms&socket_timeout=200ms`.
+Configure a Geo Service hostname reachable from that container too.
+`localhost` inside Docker refers to the processor container itself.
 
 ## Tests
 
@@ -167,13 +171,13 @@ Messages use the schema in [`proto/FlightData.proto`](proto/FlightData.proto), w
 To watch aircraft snapshots:
 
 ```sh
-docker exec -it varde-redis redis-cli SUBSCRIBE flightdata
+docker exec -it redis redis-cli SUBSCRIBE flightdata
 ```
 
 To inspect stored alert events:
 
 ```sh
-docker exec varde-redis redis-cli XRANGE varde:alerts - + COUNT 10
+docker exec redis redis-cli XRANGE varde:alerts - + COUNT 10
 ```
 
 The payloads are binary Protobuf, so `redis-cli` displays escaped bytes rather than readable JSON.
