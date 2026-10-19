@@ -52,6 +52,7 @@ void ProcessorApp::run()
     std::vector<Zone> zones = ZoneSourceGeoService::loadFile(config.getZoneFile());
 
     std::future<std::vector<Zone>> pendingZones;
+    bool zoneRefreshHadFailed = false;
     auto nextZoneRefresh = std::chrono::steady_clock::now();
     const auto zoneRefreshInterval =std::chrono::seconds(config.getZoneRefreshSeconds());
 
@@ -118,6 +119,7 @@ void ProcessorApp::run()
             }
             catch (const std::exception &error)
             {
+                zoneRefreshHadFailed = true;
                 std::cerr
                     << "Zone refresh failed; keeping cached zones: "
                     << error.what() << '\n';
@@ -145,6 +147,12 @@ void ProcessorApp::run()
                 }
             
                 zones = std::move(*refreshed);
+
+                if (zoneRefreshHadFailed)
+                {
+                    std::cerr << "Zone refresh recovered; cached zones updated\n";
+                    zoneRefreshHadFailed = false;
+                }
             }
         }
     }
