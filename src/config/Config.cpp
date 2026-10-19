@@ -144,6 +144,10 @@ void Configuration::load(const std::string &path)
                 zoneApiUrl_ = value;
             else if (key == "file")
                 zoneFile_ = value;
+            else if (key == "avoidanceApiUrl")
+                avoidanceApiUrl_ = value;
+            else if (key == "avoidanceFile")
+                avoidanceFile_ = value;
             else if (key == "refreshSeconds")
             {
                 zoneRefreshSeconds_ = std::stoi(value);
@@ -233,3 +237,14 @@ int Configuration::getZoneRefreshSeconds() const
 {
     return zoneRefreshSeconds_;
 }
+
+std::string Configuration::getAvoidanceApiUrl() const
+{
+    return avoidanceApiUrl_;
+}
+
+std::string Configuration::getAvoidanceFile() const
+{
+    return avoidanceFile_;
+}
+

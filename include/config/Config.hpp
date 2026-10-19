@@ -34,6 +34,8 @@ class Configuration
     std::string getZoneSource() const;
     std::string getZoneApiUrl() const;
     std::string getZoneFile() const;
+    std::string getAvoidanceApiUrl() const;
+    std::string getAvoidanceFile() const;
     int getZoneRefreshSeconds() const;
 
   private:
@@ -50,5 +52,7 @@ class Configuration
     std::string zoneSource_ = "file";
     std::string zoneApiUrl_ = "http://localhost:5040/collections/restricted-areas/items";
     std::string zoneFile_ = "data/zones.geojson";
+    std::string avoidanceApiUrl_ = "http://localhost:5040/collections/avoidance-areas/items";
+    std::string avoidanceFile_ = "data/avoidance-areas.geojson";
     int zoneRefreshSeconds_ = 30;
 };
