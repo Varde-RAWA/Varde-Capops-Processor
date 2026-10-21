@@ -156,3 +156,29 @@ TEST_CASE("Zone alert Protobuf preserves fields and optional entry time")
         REQUIRE(decoded.timetoentryseconds() == *event.timeToEntrySeconds);
     }
 }
+
+TEST_CASE("Vektor Protobuf preserves IDs coordinates and route costs")
+{
+    const auto config = createTestConfig();
+    const VektorProposal proposal{
+        "proposal-1", "alert-1", "SIM-0", "D-101",
+        Detour{{{60.10, 4.90}, {60.10, 5.30}}, 4.45, 24.03}};
+    const auto proto = mapToProto(proposal, config);
+    std::string bytes;
+    REQUIRE(proto.SerializeToString(&bytes));
+    varde::events::VektorProposalEvent decoded;
+    REQUIRE(decoded.ParseFromString(bytes));
+    REQUIRE(decoded.metadata().version() == 3);
+    REQUIRE_FALSE(decoded.metadata().timestamp().empty());
+    REQUIRE(decoded.proposalid() == proposal.proposalId);
+    REQUIRE(decoded.alertid() == proposal.alertId);
+    REQUIRE(decoded.icao24() == proposal.icao);
+    REQUIRE(decoded.zoneid() == proposal.zoneId);
+    REQUIRE(decoded.waypoints_size() == 2);
+    REQUIRE(decoded.waypoints(0).longitudedegrees() == 4.90);
+    REQUIRE(decoded.waypoints(0).latitudedegrees() == 60.10);
+    REQUIRE(decoded.waypoints(1).longitudedegrees() == 5.30);
+    REQUIRE(decoded.waypoints(1).latitudedegrees() == 60.10);
+    REQUIRE(decoded.extradistancekm() == 4.45);
+    REQUIRE(decoded.extratimeseconds() == 24.03);
+}

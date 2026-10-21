@@ -14,7 +14,11 @@
 #include "sources/ZoneSourceGeoService.hpp"
 #include "sources/interfaces/ITrackSource.hpp"
 #include "sources/simulations/RadarSimulator.hpp"
+#include "compute/VektorManager.hpp"
+#include "proto/FlightData.pb.h"
 
+#include <algorithm>
+#include <map>
 #include <QUuid>
 #include <chrono>
 #include <deque>
@@ -43,6 +47,19 @@ void ProcessorApp::run()
     VardeEngine engine;
     AlertManager alertManager(
         [] { return QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString(); });
+
+    VektorManager vektorManager(
+    [] {
+        return QUuid::createUuid()
+            .toString(QUuid::WithoutBraces)
+            .toStdString();
+    });
+
+    std::map<std::string, AlertEvent> openAlerts;
+    std::deque<VektorProposal> pendingProposals;
+    std::set<std::string> publishedOpenAlerts;
+
+    constexpr std::size_t maxPendingProposals = 10'000;
 
     // Used in file mode and until the first API response arrives.
     std::vector<Zone> zones = ZoneSourceGeoService::loadFile(config.getZoneFile());
@@ -77,6 +94,17 @@ void ProcessorApp::run()
 
     auto queueAlert = [&](const AlertEvent &event)
     {
+        if (event.type == AlertEventType::CLOSED)
+        {
+            openAlerts.erase(event.alertId);
+            publishedOpenAlerts.erase(event.alertId);
+            vektorManager.closeAlert(event.alertId);
+        }
+        else
+        {
+            openAlerts.insert_or_assign(event.alertId, event);
+        }
+
         if (pendingAlerts.size() >= maxPendingAlerts)
         {
             pendingAlerts.pop_front(); // Make room by dropping the oldest.
@@ -88,6 +116,46 @@ void ProcessorApp::run()
 
         pendingAlerts.push_back(event);
     };
+
+
+    auto handleDecision = [&](const varde::events::VektorDecisionEvent &event)
+    {
+        ProposalState decision;
+        switch (event.decision())
+        {
+        case varde::events::VEKTOR_DECISION_APPROVED:
+            decision = ProposalState::Approved;
+            break;
+        case varde::events::VEKTOR_DECISION_REJECTED:
+            decision = ProposalState::Rejected;
+            break;
+        case varde::events::VEKTOR_DECISION_EXPIRED:
+            decision = ProposalState::Expired;
+            break;
+        default:
+            std::cerr << "Ignoring unsupported Vektor decision\n";
+            return;
+        }
+        const auto approved = vektorManager.decide(event.proposalid(), decision);
+        if (!approved)
+        {
+            if (decision == ProposalState::Approved)
+                std::cerr << "Ignoring unknown or no-longer-pending approval "
+                          << event.proposalid() << '\n';
+            return;
+        }
+        if (!simulationMode_ || !radarSimulator_->containsFlight(approved->icao))
+        {
+            std::cerr << "Ignoring approval for absent simulated track "
+                      << approved->icao << '\n';
+            return;
+        }
+        if (!radarSimulator_->applyWaypoints(approved->icao, approved->detour.waypoints))
+            std::cerr << "Could not apply Vektor route " << approved->proposalId << '\n';
+    };
+
+
+
 
     Clock::time_point nextRedisAttempt{};
     bool redisWasUnavailable = false;
@@ -232,6 +300,29 @@ void ProcessorApp::run()
 
         previousAircraft = std::move(currentAircraft);
 
+        if (simulationMode_ && avoidanceAreas)
+        {
+            for (const auto &entry : openAlerts)
+            {
+                const AlertEvent &alert = entry.second;
+                if (pendingProposals.size() >= maxPendingProposals)
+                {
+                    break;
+                }
+                const auto track = std::find_if(result.tracks.begin(), result.tracks.end(),
+                    [&](const Track &t) { return t.getIcao() == alert.icao; });
+                const auto area = std::find_if(avoidanceAreas->begin(), avoidanceAreas->end(),
+                    [&](const Zone &z) { return z.getId() == alert.zoneId; });
+                if (track == result.tracks.end() || area == avoidanceAreas->end())
+                    continue;
+                const auto proposal = vektorManager.consider(
+                    alert, *track, true, radarSimulator_->getDestination(alert.icao), *area);
+                if (proposal)
+                    pendingProposals.push_back(*proposal);
+            }
+        }
+
+
         if (Clock::now() >= nextRedisAttempt)
         {
             try
@@ -252,9 +343,19 @@ void ProcessorApp::run()
 
                 while (!pendingAlerts.empty() && sent < maxAlertsPerCycle)
                 {
+                    const AlertEvent &event = pendingAlerts.front();
                     try
                     {
-                        publisher.publishAlert(pendingAlerts.front());
+                        publisher.publishAlert(event);
+                        if (event.type == AlertEventType::OPENED &&
+                            openAlerts.count(event.alertId) != 0)
+                        {
+                            publishedOpenAlerts.insert(event.alertId);
+                        }
+                        else if (event.type == AlertEventType::CLOSED)
+                        {
+                            publishedOpenAlerts.erase(event.alertId);
+                        }
                         pendingAlerts.pop_front(); // Redis replied successfully.
                     }
                     catch (const SerializationError &error)
@@ -268,6 +369,53 @@ void ProcessorApp::run()
 
                     ++sent;
                 }
+
+                // Ensure the alert OPENED event is published before its proposal.
+                std::size_t proposalsSent = 0;
+                while (pendingAlerts.empty() && !pendingProposals.empty() && proposalsSent < 100)
+                {
+                    const auto &proposal = pendingProposals.front();
+                    if (vektorManager.state(proposal.proposalId) != ProposalState::Proposed)
+                    {
+                        pendingProposals.pop_front(); // Closed/superseded before publication.
+                        continue;
+                    }
+
+                    if (publishedOpenAlerts.count(proposal.alertId) == 0)
+                    {
+                        std::cerr << "Discarding proposal " << proposal.proposalId
+                                  << ": alert " << proposal.alertId
+                                  << " has no successfully published OPENED event\n";
+                    
+                        vektorManager.decide(
+                            proposal.proposalId,
+                            ProposalState::Expired);
+                        
+                        pendingProposals.pop_front();
+                        continue;
+                    }
+                    
+
+                    try
+                    {
+                        publisher.publishProposal(proposal);
+                        pendingProposals.pop_front();
+                    }
+                    catch (const SerializationError &error)
+                    {
+                        std::cerr << "Discarding proposal " << proposal.proposalId
+                                  << ": " << error.what() << '\n';
+                    
+                        vektorManager.decide(
+                            proposal.proposalId,
+                            ProposalState::Expired);
+                        
+                        pendingProposals.pop_front();
+                    }
+                    
+                    ++proposalsSent;
+                }
+
 
                 if (redisWasUnavailable)
                     std::cerr << "Redis publication recovered\n";

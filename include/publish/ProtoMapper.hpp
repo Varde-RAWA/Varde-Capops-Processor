@@ -18,5 +18,8 @@ varde::events::ZoneAlertEvent mapToProto(   const AlertEvent &event,
                                             const Configuration &config
 );
 
+varde::events::VektorProposalEvent mapToProto(  const VektorProposal &proposal, 
+                                                const Configuration &config
+);
 
 
