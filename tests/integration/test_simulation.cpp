@@ -5,6 +5,21 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
+#include <limits>
+#include <stdexcept>
+
+namespace
+{
+GridConfig waypointGrid()
+{
+    GridConfig grid{};
+    grid.minLat = 59.0;
+    grid.maxLat = 61.0;
+    grid.minLon = 3.0;
+    grid.maxLon = 7.0;
+    return grid;
+}
+}
 
 TEST_CASE("Configured simulation produces the requested aircraft")
 {
@@ -73,59 +88,6 @@ TEST_CASE("Simulation movement appears in track snapshots")
     REQUIRE(after->getVerticalSpeedFeetPerMinute() == 0.0);
 }
 
-TEST_CASE("Simulated aircraft wrap across the grid boundaries periodically")
-{
-    Configuration config = createTestConfig();
-    RadarSimulator simulator(config.grid());
-
-    RadarSimulator::FlightPosition start;
-    RadarSimulator::FlightPosition destination;
-    Position expected;
-
-    SECTION("Crossing the northern edge")
-    {
-        start = {60.9995, 5.0};
-        destination = {61.9995, 5.0};
-        expected = {59.0005, 5.0};
-    }
-
-    SECTION("Crossing the southern edge")
-    {
-        start = {59.0005, 5.0};
-        destination = {58.0005, 5.0};
-        expected = {60.9995, 5.0};
-    }
-
-    SECTION("Crossing the eastern edge")
-    {
-        start = {60.0, 5.9995};
-        destination = {60.0, 6.9995};
-        expected = {60.0, 4.0015};
-    }
-
-    SECTION("Crossing the western edge")
-    {
-        start = {60.0, 4.0005};
-        destination = {60.0, 3.0005};
-        expected = {60.0, 5.9985};
-    }
-
-    // 111.32 m/s gives 0.001 latitude degrees/s,
-    // or 0.002 longitude degrees/s at 60°N.
-    simulator.initializeFlights({start}, {destination}, {111.32});
-
-    TrackSourceSimulated source(simulator);
-    simulator.tick(config.getTimestepSize());
-
-    auto track = source.getTrack("SIM-0");
-    REQUIRE(track.has_value());
-    REQUIRE(track->getPosition().latDeg ==
-            Catch::Approx(expected.latDeg));
-    REQUIRE(track->getPosition().lonDeg ==
-            Catch::Approx(expected.lonDeg));
-}
-
-
 TEST_CASE("Multiple simulation ticks accumulate aircraft movement")
 {
     Configuration config = createTestConfig();
@@ -158,4 +120,133 @@ TEST_CASE("Multiple simulation ticks accumulate aircraft movement")
     }
 
     REQUIRE(source.getAllTracks().size() == 1);
+}
+
+
+
+TEST_CASE("Simulation retains its destination and stops there", "[waypoints]")
+{
+    RadarSimulator simulator(waypointGrid());
+
+    // Northbound: 111.32 m/s equals 0.001 latitude degrees/s.
+    simulator.initializeFlights(
+        {{60.0, 4.6}},
+        {{60.01, 4.6}},
+        {111.32});
+
+    const auto destination = simulator.getDestination("SIM-0");
+
+    REQUIRE(destination);
+    REQUIRE(destination->latDeg == Catch::Approx(60.01));
+    REQUIRE(destination->lonDeg == Catch::Approx(4.6));
+
+    // Destination is approximately ten seconds away.
+    simulator.tick(20.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.01));
+    REQUIRE(simulator.getPosition("SIM-0").second == Catch::Approx(4.6));
+    REQUIRE(simulator.getVelocity("SIM-0").first == 0.0);
+    REQUIRE(simulator.getVelocity("SIM-0").second == 0.0);
+
+    simulator.tick(20.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.01));
+}
+
+TEST_CASE("Simulation follows waypoints and carries time across turns")
+{
+    RadarSimulator simulator(waypointGrid());
+
+    simulator.initializeFlights(
+        {{60.0, 4.6}},
+        {{60.02, 4.61}},
+        {111.32});
+
+    REQUIRE(simulator.applyWaypoints(
+        "SIM-0",
+        {{60.01, 4.6}, {60.01, 4.61}}));
+
+    // First leg travels north.
+    simulator.tick(5.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.005));
+    REQUIRE(simulator.getPosition("SIM-0").second == Catch::Approx(4.6));
+
+    // Five more seconds reach the waypoint; one second continues east.
+    simulator.tick(6.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.01));
+    REQUIRE(simulator.getPosition("SIM-0").second > 4.6);
+    REQUIRE(simulator.getPosition("SIM-0").second < 4.61);
+
+    TrackSourceSimulated source(simulator);
+    const auto track = source.getTrack("SIM-0");
+
+    REQUIRE(track);
+    REQUIRE(track->getGroundTrackDegrees() == Catch::Approx(90.0));
+    REQUIRE(track->getGroundSpeedKnots() ==
+            Catch::Approx(111.32 * 3600.0 / 1852.0));
+
+    // One large tick crosses the remaining legs without overshooting.
+    simulator.tick(1000.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.02));
+    REQUIRE(simulator.getPosition("SIM-0").second == Catch::Approx(4.61));
+    REQUIRE(simulator.getVelocity("SIM-0").first == 0.0);
+    REQUIRE(simulator.getVelocity("SIM-0").second == 0.0);
+}
+
+TEST_CASE("Simulation ignores unknown flights and rejects invalid routes")
+{
+    RadarSimulator simulator(waypointGrid());
+
+    simulator.initializeFlights(
+        {{60.0, 4.6}},
+        {{60.02, 4.6}},
+        {111.32});
+
+    REQUIRE_FALSE(simulator.getDestination("missing"));
+
+    REQUIRE_FALSE(simulator.applyWaypoints(
+        "missing", {{60.01, 4.6}}));
+
+    REQUIRE_FALSE(simulator.applyWaypoints(
+        "SIM-0",
+        {{std::numeric_limits<double>::quiet_NaN(), 4.6}}));
+
+    // The rejected route leaves the original northbound route usable.
+    simulator.tick(1.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.001));
+    REQUIRE(simulator.getPosition("SIM-0").second == Catch::Approx(4.6));
+}
+
+TEST_CASE("Repeated waypoints and an empty detour preserve the destination")
+{
+    RadarSimulator simulator(waypointGrid());
+
+    simulator.initializeFlights(
+        {{60.0, 4.6}},
+        {{60.02, 4.6}},
+        {111.32});
+
+    REQUIRE(simulator.applyWaypoints(
+        "SIM-0", {{60.0, 4.6}, {60.0, 4.6}}));
+
+    REQUIRE(simulator.getVelocity("SIM-0").first > 0.0);
+
+    // Empty detour means continue directly to the retained destination.
+    REQUIRE(simulator.applyWaypoints("SIM-0", {}));
+
+    simulator.tick(1.0);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.001));
+
+    REQUIRE_THROWS_AS(simulator.tick(-1.0), std::invalid_argument);
+
+    REQUIRE_THROWS_AS(
+        simulator.tick(std::numeric_limits<double>::infinity()),
+        std::invalid_argument);
+
+    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.001));
 }

@@ -5,6 +5,7 @@
 #include "domain/types/ProcessingResult.hpp"
 #include "proto/FlightData.pb.h"
 #include "domain/AlertEvent.hpp"
+#include "domain/VektorProposal.hpp"
 
 
 varde::events::TrackProto mapToProto(const Track &track);

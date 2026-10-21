@@ -2,6 +2,7 @@
 #include <cmath>
 #include <random>
 #include <stdexcept>
+#include <utility>
 
 RadarSimulator::RadarSimulator(GridConfig config)
 {
@@ -44,43 +45,56 @@ void RadarSimulator::initializeFlights(int numFlights)
     initializeFlights(startPositions, endPositions, speeds);
 }
 
-void RadarSimulator::initializeFlights(std::vector<FlightPosition> startPositions,
-                                       std::vector<FlightPosition> endPositions,
-                                       std::vector<double> speeds)
+void RadarSimulator::initializeFlights(
+    std::vector<FlightPosition> starts,
+    std::vector<FlightPosition> destinations,
+    std::vector<double> speeds)
 {
-    int numStartPositions = startPositions.size();
-    int numEndPositions = endPositions.size();
-    int numVelocities = speeds.size();
-
-    if (!(numStartPositions == numEndPositions && numStartPositions == numVelocities))
+    if (starts.size() != destinations.size() ||
+        starts.size() != speeds.size())
     {
         throw std::invalid_argument("Input vectors must have the same size");
     }
 
-    for (size_t i = 0; i < startPositions.size(); ++i)
+    const auto validPosition = [](FlightPosition position)
     {
-        FlightID icao = "SIM-" + std::to_string(i);
+        return std::isfinite(position.first) &&
+               std::isfinite(position.second) &&
+               std::abs(position.first) < 89.0 &&
+               std::abs(position.second) <= 180.0;
+    };
 
-        flightIds_.push_back(icao);
-        flightPositions_[icao] = startPositions[i];
+    for (std::size_t i = 0; i < starts.size(); ++i)
+    {
+        if (!validPosition(starts[i]) ||
+            !validPosition(destinations[i]) ||
+            !std::isfinite(speeds[i]) ||
+            speeds[i] <= 0.0)
+        {
+            throw std::invalid_argument("Invalid simulated flight");
+        }
+    }
 
-        double dlat = endPositions[i].first - startPositions[i].first;
-        double dlon = endPositions[i].second - startPositions[i].second;
+    flightIds_.clear();
+    flightPositions_.clear();
+    flightVelocities_.clear();
+    destinations_.clear();
+    speedsMps_.clear();
+    remainingWaypoints_.clear();
+    currentTime_ = 0.0;
 
-        // Convert roughly to Cartesian distance
-        double jacobianLat = 111.32e3;
-        double jacobianLon = 111.32e3 * std::cos(startPositions[i].first * M_PI / 180.0);
+    for (std::size_t i = 0; i < starts.size(); ++i)
+    {
+        const FlightID id = "SIM-" + std::to_string(i);
 
-        double dx = dlat * jacobianLat;
-        double dy = dlon * jacobianLon;
+        flightIds_.push_back(id);
+        flightPositions_[id] = starts[i];
+        destinations_[id] = destinations[i];
+        speedsMps_[id] = speeds[i];
 
-        double dr = std::sqrt(dx * dx + dy * dy);
-        double dt = dr / speeds[i];
-
-        double vLat = dx / dt / jacobianLat;
-        double vLon = dy / dt / jacobianLon;
-
-        flightVelocities_[icao] = {vLat, vLon};
+        // Initially, fly directly to the destination.
+        remainingWaypoints_[id] = {destinations[i]};
+        updateVelocity(id);
     }
 
     initialized = true;
@@ -108,22 +122,60 @@ void RadarSimulator::stop()
 
 void RadarSimulator::tick(double timeStep)
 {
+    if (!std::isfinite(timeStep) || timeStep < 0.0)
+    {
+        throw std::invalid_argument(
+            "Time step must be finite and non-negative");
+    }
+
     currentTime_ += timeStep;
 
-    double latWidth = gridConfig_.maxLat - gridConfig_.minLat;
-    double lonWidth = gridConfig_.maxLon - gridConfig_.minLon;
+    constexpr double metresPerLatitudeDegree = 111320.0;
+    const double pi = std::acos(-1.0);
 
-    for (const auto &flight : flightIds_)
+    for (const FlightID &id : flightIds_)
     {
-        FlightPosition pos = flightPositions_.at(flight);
-        FlightVelocity vel = flightVelocities_.at(flight);
+        double remainingSeconds = timeStep;
 
-        double newLat = pos.first + vel.first * timeStep;
-        double newLon = pos.second + vel.second * timeStep;
+        auto &route = remainingWaypoints_.at(id);
+        auto &position = flightPositions_.at(id);
 
-        FlightPosition newPos = enforcePeriodicBoundary({newLat, newLon}, latWidth, lonWidth);
+        while (!route.empty() && remainingSeconds > 0.0)
+        {
+            const auto target = route.front();
 
-        flightPositions_[flight] = newPos;
+            const double metresPerLongitudeDegree =
+                metresPerLatitudeDegree *
+                std::cos(position.first * pi / 180.0);
+
+            const double distanceMetres = std::hypot(
+                (target.first - position.first) * metresPerLatitudeDegree,
+                (target.second - position.second) * metresPerLongitudeDegree);
+
+            const double secondsToTarget =
+                distanceMetres / speedsMps_.at(id);
+
+            if (secondsToTarget <= remainingSeconds)
+            {
+                position = target;
+                route.pop_front();
+                remainingSeconds -= secondsToTarget;
+            }
+            else
+            {
+                const double fraction = remainingSeconds / secondsToTarget;
+
+                position.first +=
+                    fraction * (target.first - position.first);
+
+                position.second +=
+                    fraction * (target.second - position.second);
+
+                remainingSeconds = 0.0;
+            }
+        }
+
+        updateVelocity(id);
     }
 }
 
@@ -168,4 +220,92 @@ double RadarSimulator::getSpeed(const FlightID &flightId) const
 {
     auto vel = flightVelocities_.at(flightId);
     return std::sqrt(vel.first * vel.first + vel.second * vel.second);
+}
+
+std::optional<Position> RadarSimulator::getDestination(
+    const FlightID &id) const
+{
+    const auto it = destinations_.find(id);
+
+    if (it == destinations_.end())
+    {
+        return std::nullopt;
+    }
+
+    return Position{it->second.first, it->second.second};
+}
+
+bool RadarSimulator::applyWaypoints(
+    const FlightID &id,
+    const std::vector<Position> &waypoints)
+{
+    if (!containsFlight(id))
+    {
+        return false;
+    }
+
+    std::deque<FlightPosition> route;
+
+    for (const Position &position : waypoints)
+    {
+        if (!std::isfinite(position.latDeg) ||
+            !std::isfinite(position.lonDeg) ||
+            std::abs(position.latDeg) >= 89.0 ||
+            std::abs(position.lonDeg) > 180.0)
+        {
+            return false;
+        }
+
+        route.emplace_back(position.latDeg, position.lonDeg);
+    }
+
+    route.push_back(destinations_.at(id));
+    remainingWaypoints_[id] = std::move(route);
+    updateVelocity(id);
+
+    return true;
+}
+
+void RadarSimulator::updateVelocity(const FlightID &id)
+{
+    flightVelocities_[id] = {0.0, 0.0};
+
+    auto &route = remainingWaypoints_.at(id);
+    const auto position = flightPositions_.at(id);
+
+    // Skip waypoints that are already reached, including duplicates.
+    while (!route.empty() && route.front() == position)
+    {
+        route.pop_front();
+    }
+
+    if (route.empty())
+    {
+        return;
+    }
+
+    const auto target = route.front();
+
+    constexpr double metresPerLatitudeDegree = 111320.0;
+    const double pi = std::acos(-1.0);
+    const double metresPerLongitudeDegree =
+        metresPerLatitudeDegree * std::cos(position.first * pi / 180.0);
+
+    const double latitudeDifference = target.first - position.first;
+    const double longitudeDifference = target.second - position.second;
+
+    const double distanceMetres = std::hypot(
+        latitudeDifference * metresPerLatitudeDegree,
+        longitudeDifference * metresPerLongitudeDegree);
+
+    if (distanceMetres > 0.0)
+    {
+        const double seconds = distanceMetres / speedsMps_.at(id);
+
+        // Velocity remains latitude/longitude degrees per second.
+        flightVelocities_[id] = {
+            latitudeDifference / seconds,
+            longitudeDifference / seconds
+        };
+    }
 }
