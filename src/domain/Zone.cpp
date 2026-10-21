@@ -220,6 +220,8 @@ std::optional<double> Zone::firstEntryFraction(
 }
 
 
-
-
+const std::vector<Position> &Zone::getVertices() const
+{
+    return vertices_;
+}
 
