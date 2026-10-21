@@ -30,6 +30,7 @@ class Zone
         ZoneType getZoneType() const;
         bool containsPosition(const Position &position) const;
         std::optional<double> firstEntryFraction(const Position &start, const Position &end) const;
+        const std::vector<Position> &getVertices() const;
 };
 
 

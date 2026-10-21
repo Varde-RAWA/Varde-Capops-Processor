@@ -45,3 +45,8 @@ build/
 
 # vscode configs
 .vscode/
+
+.DS_Store
+
+# Local 
+/local
