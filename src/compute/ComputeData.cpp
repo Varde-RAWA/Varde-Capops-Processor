@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 
 ComputeData::ComputeData(const Configuration &configuration)
@@ -58,4 +59,27 @@ ProcessingResult ComputeData::collectProcessingResult()
     }
 
     return result;
+}
+
+
+void ComputeData::handleTrackSnapshot(const std::vector<Track> &tracks)
+{
+    std::unordered_set<std::string> presentAircraft;
+    presentAircraft.reserve(tracks.size());
+
+    for (const Track &track : tracks)
+    {
+        presentAircraft.insert(track.getIcao());
+        handleTrackUpdate(track);
+    }
+
+    // Remove aircraft absent from this complete source snapshot.
+    for (auto it = activeTracksByIcao_.begin();
+         it != activeTracksByIcao_.end();)
+    {
+        if (presentAircraft.count(it->first) == 0)
+            it = activeTracksByIcao_.erase(it);
+        else
+            ++it;
+    }
 }

@@ -184,8 +184,6 @@ void ProcessorApp::run()
                 {
                     // Replace the cache only after the complete fetch succeeds.
                     avoidanceAreas = pendingAvoidanceAreas.get();
-
-                    std::cout << "Loaded " << avoidanceAreas->size() << " avoidance areas\n";
                 }
                 catch (const std::exception &error)
                 {
@@ -326,12 +324,11 @@ void ProcessorApp::tickSimulators(double timeStep)
     radarSimulator_->tick(timeStep);
 }
 
-void ProcessorApp::processTrackUpdates(IngestService &ingestService, ComputeData &computeData)
-{
-    auto tracks = ingestService.getAllTracks();
 
-    for (const auto &track : tracks)
-    {
-        computeData.handleTrackUpdate(track);
-    }
+void ProcessorApp::processTrackUpdates(
+    IngestService &ingestService,
+    ComputeData &computeData)
+{
+    const auto tracks = ingestService.getAllTracks();
+    computeData.handleTrackSnapshot(tracks);
 }
