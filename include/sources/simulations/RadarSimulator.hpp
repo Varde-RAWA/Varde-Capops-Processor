@@ -1,12 +1,16 @@
 #pragma once
 
+#include "config/Config.hpp"
+#include "domain/types/Position.hpp"
+
 #include <atomic>
 #include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "config/Config.hpp"
+#include <deque>
+#include <optional>
+#include <utility>
 
 class RadarSimulator
 {
@@ -35,6 +39,9 @@ class RadarSimulator
     FlightVelocity getVelocity(const FlightID &flightId) const;
     double getSpeed(const FlightID &flightId) const;
 
+    std::optional<Position> getDestination(const FlightID &id) const;
+    bool applyWaypoints(const FlightID &id, const std::vector<Position> &waypoints);
+
   private:
     void initializeFlights();
 
@@ -52,4 +59,10 @@ class RadarSimulator
     std::atomic<bool> isRunning_ = false;
     double currentTime_;
     double timeStep_;
+
+    void updateVelocity(const FlightID &id);
+
+    std::unordered_map<FlightID, FlightPosition> destinations_;
+    std::unordered_map<FlightID, double> speedsMps_;
+    std::unordered_map<FlightID, std::deque<FlightPosition>> remainingWaypoints_;
 };

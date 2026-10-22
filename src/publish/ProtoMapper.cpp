@@ -102,3 +102,24 @@ varde::events::ZoneAlertEvent mapToProto(   const AlertEvent &event,
 
     return proto;
 }
+
+varde::events::VektorProposalEvent mapToProto(
+    const VektorProposal &proposal, const Configuration &config)
+{
+    varde::events::VektorProposalEvent proto;
+    proto.mutable_metadata()->set_version(config.getProtobufVersion());
+    proto.mutable_metadata()->set_timestamp(createIsoTimestamp());
+    proto.set_proposalid(proposal.proposalId);
+    proto.set_alertid(proposal.alertId);
+    proto.set_icao24(proposal.icao);
+    proto.set_zoneid(proposal.zoneId);
+    for (Position position : proposal.detour.waypoints)
+    {
+        auto *waypoint = proto.add_waypoints();
+        waypoint->set_longitudedegrees(position.lonDeg);
+        waypoint->set_latitudedegrees(position.latDeg);
+    }
+    proto.set_extradistancekm(proposal.detour.extraDistanceKm);
+    proto.set_extratimeseconds(proposal.detour.extraTimeSeconds);
+    return proto;
+}

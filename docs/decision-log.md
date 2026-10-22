@@ -174,3 +174,89 @@ persistent, so pending alerts are lost if the processor exits.
 Alerts can also be lost when the queue reaches its limit.
 A serialization failure causes the affected alert to be logged
 and discarded.
+
+
+## Decision 006: Implement Vektor proposals and simulator waypoint support
+
+**Date:** 21.10.26
+**Status:** Implemented — Redis decision consumption deferred
+
+### Context
+
+Vektor must propose detours for simulated aircraft approaching restricted
+airspace. The inherited simulator calculated an initial direction but did
+not retain destinations or support route changes.
+
+### Decision
+
+Separate route calculation, proposal state, and transport:
+
+- `VektorEngine` calculates detours without Qt, Redis, or network dependencies.
+- `VektorManager` handles eligibility and proposal lifecycle state.
+- `ProcessorApp` coordinates tracks, alerts, avoidance areas, and publication.
+
+Calculate detours around the convex hull of the avoidance polygon supplied
+by the Geo Service. Use the SRS local distance model and choose the shorter
+route around the hull. Boundary travel is permitted. The Geo Service
+already applies the safety margin, so the processor does not add it again.
+
+Generate proposals only for simulated aircraft with a known destination
+and a PREDICTED or IMMINENT alert whose direct route crosses the
+corresponding avoidance area.
+
+Allow one successfully created proposal per alert episode. Rejection,
+approval, or expiry does not automatically produce another proposal for
+that alert. An unsuccessful geometry calculation may be retried.
+A newer proposal for the same aircraft expires its previous pending
+proposal locally.
+
+Retain each simulated aircraft's destination and cruise speed. Applying
+waypoints replaces its remaining route and appends the original
+destination. Aircraft stop at their destinations with zero velocity.
+Movement continues across waypoint boundaries within the same tick.
+
+Publish proposals as version 3 `VektorProposalEvent` messages in the
+`data` field of `varde:vektor-proposals`, approximately capped at
+10,000 entries.
+
+Queue proposals in memory and retain them for retry after Redis errors.
+Publish a proposal only after Redis has acknowledged its alert's OPENED
+event. Discard closed or superseded proposals before publication.
+If the OPENED event was lost, or proposal serialization fails, log the
+discard and mark the unsent proposal locally EXPIRED.
+
+### Reason
+
+Separating geometry and lifecycle state makes both independently testable.
+
+One proposal per alert episode avoids repeated proposals during the
+500 ms processing cycle. This is stricter than the SRS limit of one
+PROPOSED proposal at a time and also prevents automatic re-proposal
+after rejection.
+
+Destination and waypoint support provides the simulation behavior needed
+for approved detours. Checking OPENED publication prevents publishing
+proposals that reference an alert whose opening event was discarded.
+
+### Verification
+
+Tests cover the SRS detour example, route costs, boundary behavior,
+proposal eligibility and transitions, waypoint following, destination
+stopping, and Protobuf field mapping.
+
+A Redis stream test checks proposal publication and decoding. It requires
+Redis to be available. Manual stream inspection confirmed that a Vektor
+proposal reached Redis.
+
+### Consequences
+
+Proposal state and pending events are held in memory and are lost when
+the processor exits. Routing currently handles one corresponding
+avoidance area; it does not perform multi-area route planning.
+
+The simulator can follow supplied waypoints, but Redis decision
+consumption and automatic application of operator approvals remain a
+separate issue. The complete S3 approval/rejection demonstration and
+S4 performance measurement remain outstanding.
+
+Scenario-file loading and start delays also remain separate work.

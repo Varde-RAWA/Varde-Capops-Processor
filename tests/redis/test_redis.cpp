@@ -8,6 +8,10 @@
 #include "proto/FlightData.pb.h"
 #include <sw/redis++/redis++.h>
 #include <string>
+#include <QUuid>
+#include <iterator>
+#include <utility>
+#include <vector>
 
 // ============================================================================
 // REDIS PUBLISHER TESTS
@@ -134,4 +138,38 @@ TEST_CASE("RedisPublisher delivers the expected Protobuf message")
     REQUIRE(track.headingdegrees() == 180.0);
     REQUIRE(track.groundtrackdegrees() == 175.0);
 
+}
+
+TEST_CASE("Vektor proposals are stored in a Redis stream")
+{
+    const auto config = createTestConfig();
+    requireRedisAvailable(config);
+    sw::redis::Redis redis(config.getRedisUrl());
+    const std::string stream = "test:vektor:" +
+        QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
+    RedisPublisher publisher(config, stream + ":alerts", stream);
+    const VektorProposal proposal{
+        "proposal-1", "alert-1", "SIM-0", "D-101",
+        Detour{{{60.10, 4.90}, {60.10, 5.30}}, 4.45, 24.03}};
+    const auto id = publisher.publishProposal(proposal);
+    // Expire only this test's unique key, even if an assertion fails below.
+    redis.expire(stream, 60);
+    using Fields = std::vector<std::pair<std::string, std::string>>;
+    std::vector<std::pair<std::string, Fields>> entries;
+    redis.xrange(stream, "-", "+", std::back_inserter(entries));
+    REQUIRE(entries.size() == 1);
+    REQUIRE(entries[0].first == id);
+    REQUIRE(entries[0].second.size() == 1);
+    REQUIRE(entries[0].second[0].first == "data");
+    varde::events::VektorProposalEvent decoded;
+    REQUIRE(decoded.ParseFromString(entries[0].second[0].second));
+    REQUIRE(decoded.proposalid() == proposal.proposalId);
+    REQUIRE(decoded.alertid() == proposal.alertId);
+    REQUIRE(decoded.metadata().version() == 3);
+    REQUIRE(decoded.waypoints_size() == 2);
+    REQUIRE(decoded.waypoints(0).longitudedegrees() == 4.90);
+    REQUIRE(decoded.waypoints(0).latitudedegrees() == 60.10);
+    REQUIRE(decoded.extradistancekm() == 4.45);
+    REQUIRE(decoded.extratimeseconds() == 24.03);
+    redis.del(stream);
 }
