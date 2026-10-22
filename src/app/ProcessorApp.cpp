@@ -16,6 +16,7 @@
 #include "sources/simulations/RadarSimulator.hpp"
 #include "compute/VektorManager.hpp"
 #include "proto/FlightData.pb.h"
+#include "ingest/VektorDecisionConsumer.hpp"
 
 #include <algorithm>
 #include <map>
@@ -43,6 +44,7 @@ void ProcessorApp::run()
     IngestService ingestService(config.grid(), trackSource_.get());
     ComputeData computeData(config);
     RedisPublisher publisher(config);
+    VektorDecisionConsumer decisionConsumer(config);
 
     VardeEngine engine;
     AlertManager alertManager(
@@ -87,6 +89,9 @@ void ProcessorApp::run()
     std::set<std::string> previousAircraft;
 
     using Clock = std::chrono::steady_clock;
+
+    Clock::time_point nextDecisionAttempt{};
+    bool decisionsUnavailable = false;
 
     std::deque<AlertEvent> pendingAlerts;
     constexpr std::size_t maxPendingAlerts = 10'000;
@@ -322,6 +327,27 @@ void ProcessorApp::run()
             }
         }
 
+
+
+        if (Clock::now() >= nextDecisionAttempt)
+        {
+            try
+            {
+                decisionConsumer.poll(handleDecision);
+                decisionsUnavailable = false;
+            }
+            catch (const sw::redis::Error &error)
+            {
+                if (!decisionsUnavailable)
+                {
+                    std::cerr << "Vektor decision reading failed: "
+                              << error.what() << '\n';
+                }
+                decisionsUnavailable = true;
+                nextDecisionAttempt =
+                    Clock::now() + std::chrono::seconds(1);
+            }
+        }
 
         if (Clock::now() >= nextRedisAttempt)
         {
