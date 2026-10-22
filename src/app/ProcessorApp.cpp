@@ -1,36 +1,20 @@
 #include "app/ProcessorApp.hpp"
 
-#include "compute/AlertManager.hpp"
-#include "compute/ComputeData.hpp"
-#include "compute/VardeEngine.hpp"
+#include "app/EventDispatcher.hpp"
+#include "app/ProcessorCycle.hpp"
 #include "config/Config.hpp"
-#include "domain/Zone.hpp"
-#include "domain/types/ProcessingResult.hpp"
 #include "ingest/IngestService.hpp"
+#include "ingest/VektorDecisionConsumer.hpp"
 #include "publish/RedisPublisher.hpp"
-#include "publish/SerializationError.hpp"
 #include "sources/TrackSourceOpenSky.hpp"
 #include "sources/TrackSourceSimulated.hpp"
-#include "sources/ZoneSourceGeoService.hpp"
-#include "sources/interfaces/ITrackSource.hpp"
+#include "sources/ZoneCache.hpp"
 #include "sources/simulations/RadarSimulator.hpp"
-#include "compute/VektorManager.hpp"
-#include "proto/FlightData.pb.h"
-#include "ingest/VektorDecisionConsumer.hpp"
 
-#include <algorithm>
-#include <map>
 #include <QUuid>
 #include <chrono>
-#include <deque>
-#include <future>
-#include <iostream>
-#include <optional>
-#include <set>
 #include <stdexcept>
 #include <thread>
-#include <utility>
-#include <vector>
 
 ProcessorApp::ProcessorApp() = default;
 ProcessorApp::~ProcessorApp() = default;
@@ -38,430 +22,35 @@ ProcessorApp::~ProcessorApp() = default;
 void ProcessorApp::run()
 {
     Configuration config("configuration.cfg");
-
     initializeSources(config);
 
-    IngestService ingestService(config.grid(), trackSource_.get());
-    ComputeData computeData(config);
+    IngestService ingest(config.grid(), trackSource_.get());
     RedisPublisher publisher(config);
     VektorDecisionConsumer decisionConsumer(config);
+    ZoneCache zoneCache(config);
+    EventDispatcher dispatcher(publisher);
 
-    VardeEngine engine;
-    AlertManager alertManager(
-        [] { return QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString(); });
-
-    VektorManager vektorManager(
-    [] {
-        return QUuid::createUuid()
-            .toString(QUuid::WithoutBraces)
-            .toStdString();
-    });
-
-    std::map<std::string, AlertEvent> openAlerts;
-    std::deque<VektorProposal> pendingProposals;
-    std::set<std::string> publishedOpenAlerts;
-
-    constexpr std::size_t maxPendingProposals = 10'000;
-
-    // Used in file mode and until the first API response arrives.
-    std::vector<Zone> zones = ZoneSourceGeoService::loadFile(config.getZoneFile());
-
-    std::optional<std::vector<Zone>> avoidanceAreas;
-
-    try
+    const auto makeId = []
     {
-        avoidanceAreas = ZoneSourceGeoService::loadFile(config.getAvoidanceFile());
-    }
-    catch (const std::exception &error)
-    {
-        std::cerr << "Avoidance data unavailable; continuing zone warnings: " << error.what()
-                  << '\n';
-    }
-
-    std::future<std::vector<Zone>> pendingAvoidanceAreas;
-    auto nextAvoidanceRefresh = std::chrono::steady_clock::now();
-
-    std::future<std::vector<Zone>> pendingZones;
-    bool zoneRefreshHadFailed = false;
-    auto nextZoneRefresh = std::chrono::steady_clock::now();
-    const auto zoneRefreshInterval = std::chrono::seconds(config.getZoneRefreshSeconds());
-
-    std::set<std::string> previousAircraft;
-
-    using Clock = std::chrono::steady_clock;
-
-    Clock::time_point nextDecisionAttempt{};
-    bool decisionsUnavailable = false;
-
-    std::deque<AlertEvent> pendingAlerts;
-    constexpr std::size_t maxPendingAlerts = 10'000;
-    std::size_t droppedAlerts = 0;
-
-    auto queueAlert = [&](const AlertEvent &event)
-    {
-        if (event.type == AlertEventType::CLOSED)
-        {
-            openAlerts.erase(event.alertId);
-            publishedOpenAlerts.erase(event.alertId);
-            vektorManager.closeAlert(event.alertId);
-        }
-        else
-        {
-            openAlerts.insert_or_assign(event.alertId, event);
-        }
-
-        if (pendingAlerts.size() >= maxPendingAlerts)
-        {
-            pendingAlerts.pop_front(); // Make room by dropping the oldest.
-            ++droppedAlerts;
-
-            if (droppedAlerts == 1 || droppedAlerts % 100 == 0)
-                std::cerr << "Alert queue full; dropped " << droppedAlerts << " alerts\n";
-        }
-
-        pendingAlerts.push_back(event);
+        return QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
     };
 
+    // Construct the cycle after the objects it references.
+    ProcessorCycle cycle(
+        config, ingest, zoneCache, dispatcher, decisionConsumer,
+        simulationMode_ ? radarSimulator_.get() : nullptr,
+        makeId, makeId);
 
-    auto handleDecision = [&](const varde::events::VektorDecisionEvent &event)
-    {
-        ProposalState decision;
-        switch (event.decision())
-        {
-        case varde::events::VEKTOR_DECISION_APPROVED:
-            decision = ProposalState::Approved;
-            break;
-        case varde::events::VEKTOR_DECISION_REJECTED:
-            decision = ProposalState::Rejected;
-            break;
-        case varde::events::VEKTOR_DECISION_EXPIRED:
-            decision = ProposalState::Expired;
-            break;
-        default:
-            std::cerr << "Ignoring unsupported Vektor decision\n";
-            return;
-        }
-        const auto approved = vektorManager.decide(event.proposalid(), decision);
-        if (!approved)
-        {
-            if (decision == ProposalState::Approved)
-                std::cerr << "Ignoring unknown or no-longer-pending approval "
-                          << event.proposalid() << '\n';
-            return;
-        }
-        if (!simulationMode_ || !radarSimulator_->containsFlight(approved->icao))
-        {
-            std::cerr << "Ignoring approval for absent simulated track "
-                      << approved->icao << '\n';
-            return;
-        }
-        if (!radarSimulator_->applyWaypoints(approved->icao, approved->detour.waypoints))
-            std::cerr << "Could not apply Vektor route " << approved->proposalId << '\n';
-    };
-
-
-
-
-    Clock::time_point nextRedisAttempt{};
-    bool redisWasUnavailable = false;
-
-    const double timeStep = config.getTimestepSize();
     const auto sleepDuration = std::chrono::milliseconds(config.getLoopInterval());
 
     while (true)
     {
-        if (config.getZoneSource() == "api")
-        {
-            const auto now = std::chrono::steady_clock::now();
-
-            if (!pendingZones.valid() && now >= nextZoneRefresh)
-            {
-                pendingZones = std::async(std::launch::async,
-                                          [url = config.getZoneApiUrl()]
-                                          {
-                                              ZoneSourceGeoService source;
-                                              return source.getActiveZones(url);
-                                          });
-
-                nextZoneRefresh = now + zoneRefreshInterval;
-            }
-
-            if (pendingZones.valid() &&
-                pendingZones.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-            {
-                std::optional<std::vector<Zone>> refreshed;
-
-                try
-                {
-                    refreshed = pendingZones.get();
-                }
-                catch (const std::exception &error)
-                {
-                    zoneRefreshHadFailed = true;
-                    std::cerr << "Zone refresh failed; keeping cached zones: " << error.what()
-                              << '\n';
-                }
-
-                if (refreshed)
-                {
-                    std::set<std::string> activeIds;
-
-                    for (const Zone &zone : *refreshed)
-                        activeIds.insert(zone.getId());
-
-                    // A successfully refreshed set may deactivate zones.
-                    for (const Zone &oldZone : zones)
-                    {
-                        if (activeIds.count(oldZone.getId()) == 0)
-                        {
-                            const auto events =
-                                alertManager.handleZoneDeactivation(oldZone.getId());
-
-                            for (const AlertEvent &event : events)
-                                queueAlert(event);
-                        }
-                    }
-
-                    zones = std::move(*refreshed);
-
-                    if (zoneRefreshHadFailed)
-                    {
-                        std::cerr << "Zone refresh recovered; cached zones updated\n";
-                        zoneRefreshHadFailed = false;
-                    }
-                }
-            }
-        }
-
-        if (config.getZoneSource() == "api")
-        {
-            const auto now = std::chrono::steady_clock::now();
-
-            if (!pendingAvoidanceAreas.valid() && now >= nextAvoidanceRefresh)
-            {
-                pendingAvoidanceAreas = std::async(std::launch::async,
-                                                   [url = config.getAvoidanceApiUrl()]
-                                                   {
-                                                       ZoneSourceGeoService source;
-                                                       return source.getActiveZones(url);
-                                                   });
-
-                nextAvoidanceRefresh = now + zoneRefreshInterval;
-            }
-
-            if (pendingAvoidanceAreas.valid() &&
-                pendingAvoidanceAreas.wait_for(std::chrono::seconds(0)) ==
-                    std::future_status::ready)
-            {
-                try
-                {
-                    // Replace the cache only after the complete fetch succeeds.
-                    avoidanceAreas = pendingAvoidanceAreas.get();
-                }
-                catch (const std::exception &error)
-                {
-                    std::cerr << "Avoidance refresh failed; "
-                              << (avoidanceAreas ? "keeping cached areas: "
-                                                 : "no avoidance data available: ")
-                              << error.what() << '\n';
-                }
-            }
-        }
-
-        if (simulationMode_)
-            tickSimulators(timeStep);
-
-        processTrackUpdates(ingestService, computeData);
-
-        const ProcessingResult result = computeData.collectProcessingResult();
-
-        std::set<std::string> currentAircraft;
-
-        for (const Track &track : result.tracks)
-        {
-            currentAircraft.insert(track.getIcao());
-
-            const auto checks = engine.evaluateTrack(track, zones);
-
-            for (const ZoneCheckResult &check : checks)
-            {
-                const auto event = alertManager.update(check);
-
-                if (event)
-                    queueAlert(*event);
-            }
-        }
-
-        for (const std::string &icao : previousAircraft)
-        {
-            if (currentAircraft.count(icao) == 0)
-            {
-                const auto events = alertManager.handleTrackDisappearance(icao);
-
-                for (const AlertEvent &event : events)
-                    queueAlert(event);
-            }
-        }
-
-        previousAircraft = std::move(currentAircraft);
-
-        if (simulationMode_ && avoidanceAreas)
-        {
-            for (const auto &entry : openAlerts)
-            {
-                const AlertEvent &alert = entry.second;
-                if (pendingProposals.size() >= maxPendingProposals)
-                {
-                    break;
-                }
-                const auto track = std::find_if(result.tracks.begin(), result.tracks.end(),
-                    [&](const Track &t) { return t.getIcao() == alert.icao; });
-                const auto area = std::find_if(avoidanceAreas->begin(), avoidanceAreas->end(),
-                    [&](const Zone &z) { return z.getId() == alert.zoneId; });
-                if (track == result.tracks.end() || area == avoidanceAreas->end())
-                    continue;
-                const auto proposal = vektorManager.consider(
-                    alert, *track, true, radarSimulator_->getDestination(alert.icao), *area);
-                if (proposal)
-                    pendingProposals.push_back(*proposal);
-            }
-        }
-
-
-
-        if (Clock::now() >= nextDecisionAttempt)
-        {
-            try
-            {
-                decisionConsumer.poll(handleDecision);
-                decisionsUnavailable = false;
-            }
-            catch (const sw::redis::Error &error)
-            {
-                if (!decisionsUnavailable)
-                {
-                    std::cerr << "Vektor decision reading failed: "
-                              << error.what() << '\n';
-                }
-                decisionsUnavailable = true;
-                nextDecisionAttempt =
-                    Clock::now() + std::chrono::seconds(1);
-            }
-        }
-
-        if (Clock::now() >= nextRedisAttempt)
-        {
-            try
-            {
-                // Snapshots are current state: after an outage, send the latest one.
-                // A failed snapshot can be replaced by the next cycle's snapshot.
-                try
-                {
-                    publisher.publish(result);
-                }
-                catch (const SerializationError &error)
-                {
-                    std::cerr << "Skipping flight snapshot: " << error.what() << '\n';
-                }
-
-                constexpr std::size_t maxAlertsPerCycle = 100;
-                std::size_t sent = 0;
-
-                while (!pendingAlerts.empty() && sent < maxAlertsPerCycle)
-                {
-                    const AlertEvent &event = pendingAlerts.front();
-                    try
-                    {
-                        publisher.publishAlert(event);
-                        if (event.type == AlertEventType::OPENED &&
-                            openAlerts.count(event.alertId) != 0)
-                        {
-                            publishedOpenAlerts.insert(event.alertId);
-                        }
-                        else if (event.type == AlertEventType::CLOSED)
-                        {
-                            publishedOpenAlerts.erase(event.alertId);
-                        }
-                        pendingAlerts.pop_front(); // Redis replied successfully.
-                    }
-                    catch (const SerializationError &error)
-                    {
-                        std::cerr << "Cannot serialize alert " << pendingAlerts.front().alertId
-                                  << ": " << error.what() << '\n';
-
-                        // Only do this if you accept losing this alert:
-                        pendingAlerts.pop_front();
-                    }
-
-                    ++sent;
-                }
-
-                // Ensure the alert OPENED event is published before its proposal.
-                std::size_t proposalsSent = 0;
-                while (pendingAlerts.empty() && !pendingProposals.empty() && proposalsSent < 100)
-                {
-                    const auto &proposal = pendingProposals.front();
-                    if (vektorManager.state(proposal.proposalId) != ProposalState::Proposed)
-                    {
-                        pendingProposals.pop_front(); // Closed/superseded before publication.
-                        continue;
-                    }
-
-                    if (publishedOpenAlerts.count(proposal.alertId) == 0)
-                    {
-                        std::cerr << "Discarding proposal " << proposal.proposalId
-                                  << ": alert " << proposal.alertId
-                                  << " has no successfully published OPENED event\n";
-                    
-                        vektorManager.decide(
-                            proposal.proposalId,
-                            ProposalState::Expired);
-                        
-                        pendingProposals.pop_front();
-                        continue;
-                    }
-                    
-
-                    try
-                    {
-                        publisher.publishProposal(proposal);
-                        pendingProposals.pop_front();
-                    }
-                    catch (const SerializationError &error)
-                    {
-                        std::cerr << "Discarding proposal " << proposal.proposalId
-                                  << ": " << error.what() << '\n';
-                    
-                        vektorManager.decide(
-                            proposal.proposalId,
-                            ProposalState::Expired);
-                        
-                        pendingProposals.pop_front();
-                    }
-                    
-                    ++proposalsSent;
-                }
-
-
-                if (redisWasUnavailable)
-                    std::cerr << "Redis publication recovered\n";
-
-                redisWasUnavailable = false;
-            }
-            catch (const sw::redis::Error &error)
-            {
-                if (!redisWasUnavailable)
-                    std::cerr << "Redis publication failed: " << error.what() << '\n';
-
-                redisWasUnavailable = true;
-                nextRedisAttempt = Clock::now() + std::chrono::seconds(1);
-            }
-        }
+        cycle.runOnce();
         std::this_thread::sleep_for(sleepDuration);
     }
 }
 
-void ProcessorApp::initializeSources(const Configuration &config)
+void ProcessorApp::initializeSources(const Configuration& config)
 {
     simulationMode_ = (config.getSourceType() == SourceType::Simulation);
 
@@ -469,12 +58,9 @@ void ProcessorApp::initializeSources(const Configuration &config)
     {
         radarSimulator_ = std::make_unique<RadarSimulator>(config.grid());
         radarSimulator_->initializeFlights(
-            {{60.0, 4.6}}, // Start: latitude 60.0°, longitude 4.6° from Scenario 1.
-            {{60.0, 5.6}}, // Destination: latitude 60.0°, longitude 5.6° from Scenario 1.
-            {              // Scenario speed: 360 knots (nautical miles per hour).
-             // Multiply by 1852 metres per nautical mile, then divide
-             // by 3600 seconds per hour to get 185.2 metres per second.
-             360.0 * 1852.0 / 3600.0});
+            {{60.0, 4.6}},
+            {{60.0, 5.6}},
+            {360.0 * 1852.0 / 3600.0});
 
         trackSource_ = std::make_unique<TrackSourceSimulated>(*radarSimulator_);
         return;
@@ -482,7 +68,6 @@ void ProcessorApp::initializeSources(const Configuration &config)
 
     if (config.getSourceType() == SourceType::Api)
     {
-
         auto openSky = std::make_unique<TrackSourceOpenSky>();
         openSky->setRegion(config.grid());
         trackSource_ = std::move(openSky);
@@ -490,19 +75,4 @@ void ProcessorApp::initializeSources(const Configuration &config)
     }
 
     throw std::runtime_error("Unsupported source type in configuration.");
-}
-
-void ProcessorApp::tickSimulators(double timeStep)
-{
-
-    radarSimulator_->tick(timeStep);
-}
-
-
-void ProcessorApp::processTrackUpdates(
-    IngestService &ingestService,
-    ComputeData &computeData)
-{
-    const auto tracks = ingestService.getAllTracks();
-    computeData.handleTrackSnapshot(tracks);
 }

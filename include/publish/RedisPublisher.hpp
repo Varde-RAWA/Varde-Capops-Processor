@@ -1,25 +1,23 @@
 #pragma once
 
 #include "config/Config.hpp"
-#include "domain/AlertEvent.hpp"
-#include "domain/VektorProposal.hpp"
-#include "domain/types/ProcessingResult.hpp"
+#include "publish/IEventPublisher.hpp"
 
 #include <sw/redis++/redis++.h>
 #include <string>
 
 
-class RedisPublisher
+class RedisPublisher : public IEventPublisher
 {
 public:
     RedisPublisher(
-    const Configuration &config,
-    std::string alertStream = "varde:alerts",
-    std::string proposalStream = "varde:vektor-proposals");
+        const Configuration &config,
+        std::string alertStream = "varde:alerts",
+        std::string proposalStream = "varde:vektor-proposals");
 
-    void publish(const ProcessingResult &result);
-    std::string publishAlert(const AlertEvent &event);
-    std::string publishProposal(const VektorProposal &proposal);
+    void publish(const ProcessingResult &result) override;
+    std::string publishAlert(const AlertEvent &event) override;
+    std::string publishProposal(const VektorProposal &proposal) override;
 
 private:
     const Configuration &config_;

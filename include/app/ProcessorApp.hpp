@@ -3,29 +3,21 @@
 #include "sources/interfaces/ITrackSource.hpp"
 #include <memory>
 
-
-class RadarSimulator;
 class Configuration;
-class IngestService;
-class ComputeData;
-class RedisPublisher;
+class RadarSimulator;
 
 class ProcessorApp
 {
-  public:
+public:
     ProcessorApp();
     ~ProcessorApp();
 
     void run();
 
-  private:
-    void initializeSources(const Configuration &config);
-    void tickSimulators(double timeStep);
-    void processTrackUpdates(IngestService &ingestService, ComputeData &computeData);
+private:
+    void initializeSources(const Configuration& config);
 
     std::unique_ptr<ITrackSource> trackSource_;
-
     std::unique_ptr<RadarSimulator> radarSimulator_;
-
     bool simulationMode_ = false;
 };
