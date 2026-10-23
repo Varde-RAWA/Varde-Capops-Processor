@@ -129,6 +129,7 @@ ConfigurationValues loadConfigurationValues(const std::string& path, Environment
             }},
         {"simulation.numFlights", [&](const auto& s) { values.numFlights = integer(s); }},
         {"simulation.timestepSize", [&](const auto& s) { values.timestepSize = number(s); }},
+        {"simulation.scenarioFiles", [&](const auto& s) { values.scenarioFiles = s; }},
         {"execution.loopIntervalMs", [&](const auto& s) { values.loopIntervalMs = integer(s); }},
         {"zones.source", [&](const auto& s) { values.zoneSource = s; }},
         {"zones.apiUrl", [&](const auto& s) { values.zoneApiUrl = s; }},
@@ -180,6 +181,10 @@ void validateConfiguration(ConfigurationValues& values)
     {
         requireUrl(values.zoneApiUrl, "zones.apiUrl", false);
         requireUrl(values.avoidanceApiUrl, "zones.avoidanceApiUrl", false);
+    }
+    if (values.sourceType == SourceType::Simulation)
+    {
+        require(!values.scenarioFiles.empty(), "simulation.scenarioFiles must not be empty");
     }
     values.grid.computeDimensions();
 }

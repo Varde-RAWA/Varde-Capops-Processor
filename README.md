@@ -134,7 +134,62 @@ timestepSize=0.5
 loopIntervalMs=500
 ```
 
-The current application initializes one predefined eastward flight in `ProcessorApp::initializeSources`. It does not yet load the scenario GeoJSON file or use `numFlights` to select the number of aircraft in this setup. Set `type=api` to use the OpenSky source instead.
+### Simulation scenarios
+
+When `[dataSource]` has `type=sim`, the processor loads aircraft from the GeoJSON files specified in `configuration.cfg`:
+
+```ini
+[simulation]
+scenarioFiles=scenarios/S4-random-150.geojson
+timestepSize=0.5
+
+[execution]
+loopIntervalMs=500
+```
+
+To load multiple scenarios together, separate their paths with commas:
+
+```ini
+scenarioFiles=scenarios/S1.geojson,scenarios/S2-near-miss.geojson
+```
+
+All aircraft in the selected files are loaded; `numFlights` does not control their count. Paths are relative to the working directory, so start the processor from the repository root:
+
+```sh
+./build/backend
+```
+
+Restart the processor after changing configuration or scenario files. No rebuild is needed for those edits.
+
+Each aircraft must be a GeoJSON Point feature with:
+
+- `geometry.coordinates`: starting position as `[longitude, latitude]`.
+- `properties.destination`: destination as `[longitude, latitude]`.
+- `properties.groundSpeedKt`: positive ground speed in knots.
+- `properties.startDelaySeconds`: currently must be `0` or omitted.
+
+Aircraft fly toward their destinations and stop when they arrive. Approved Vektor detours can change their routes.
+
+`timestepSize` controls simulated seconds advanced per cycle. `loopIntervalMs` controls the pause after each processing cycle, in milliseconds. Processing time adds to that pause. Values of `0.5` and `500` give approximately real-time simulation before any speed multiplier.
+
+The current simulator applies a hardcoded 5× speed multiplier in `RadarSimulator.cpp`. This affects both movement and reported ground speed. Changing this multiplier requires rebuilding.
+
+Scenario ICAO identifiers and altitudes are not yet preserved: the simulator generates `SIM-0`, `SIM-1`, etc. and synthetic altitudes. Timestamps use current time, and headings are calculated from the flight route.
+
+Available scenarios:
+
+| File | Aircraft |
+|---|---:|
+| `S1.geojson` | 1 |
+| `S2-near-miss.geojson` | 1 |
+| `S3-detour.geojson` | 1 |
+| `S4-load-150.geojson` | 150 |
+| `S4-random-150.geojson` | 150 |
+| `S5-zone-switched-on.geojson` | 1 |
+
+The random scenario has varied starting positions, destinations near the map boundary, and configured speeds of 200–450 knots before the simulator multiplier. Scenario files configure aircraft; restricted and avoidance zones are configured separately under `[zones]`.
+
+OpenSky API mode is not yet verified. Use `type=sim` for the tested scenario-based simulation.
 
 `loopIntervalMs=500` adds a half-second pause between processing cycles. Zone fetching has its own refresh interval; it does not make an HTTP request every cycle.
 
