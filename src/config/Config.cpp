@@ -1,250 +1,60 @@
 #include "config/Config.hpp"
+#include "config/ConfigLoader.hpp"
 
 #include <algorithm>
-#include <cctype>
 #include <cmath>
-#include <fstream>
-#include <sstream>
+#include <limits>
 #include <stdexcept>
+#include <utility>
 
-namespace
-{
-std::string trim(const std::string &s)
-{
-    auto start =
-        std::find_if_not(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); });
-    auto end =
-        std::find_if_not(s.rbegin(), s.rend(), [](unsigned char c) { return std::isspace(c); })
-            .base();
-
-    if (start >= end)
-        return "";
-    return std::string(start, end);
-}
-
-std::string stripComment(const std::string &s)
-{
-    auto pos = s.find('#');
-    if (pos == std::string::npos)
-        return s;
-    return s.substr(0, pos);
-}
-} // namespace
-
-Configuration::Configuration(const std::string &path)
+Configuration::Configuration(const std::string& path)
 {
     load(path);
-    grid_.computeDimensions();
 }
 
-const GridConfig &Configuration::grid() const
+void Configuration::load(const std::string& path)
 {
-    return grid_;
+    auto candidate = loadConfigurationValues(path);
+    values_ = std::move(candidate);
 }
 
-void Configuration::load(const std::string &path)
-{
-    std::ifstream file(path);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Could not open config file");
-    }
-
-    std::string line;
-    std::string currentSection;
-
-    while (std::getline(file, line))
-    {
-        line = trim(stripComment(line));
-        if (line.empty())
-            continue;
-
-        if (line.front() == '[' && line.back() == ']')
-        {
-            currentSection = line.substr(1, line.size() - 2);
-            continue;
-        }
-
-        auto pos = line.find('=');
-        if (pos == std::string::npos)
-            continue;
-
-        std::string key = trim(line.substr(0, pos));
-        std::string value = trim(line.substr(pos + 1));
-
-        // Env var name: section_key in UPPER_SNAKE_CASE, e.g. GRID_MINLAT
-        std::string envKey = currentSection + "_" + key;                  
-        std::transform(envKey.begin(), envKey.end(), envKey.begin(), ::toupper);
-        if (const char *envVal = std::getenv(envKey.c_str()))
-            value = envVal;
-
-        if (currentSection == "grid")
-        {
-            if (key == "minLat")
-                grid_.minLat = std::stod(value);
-            else if (key == "maxLat")
-                grid_.maxLat = std::stod(value);
-            else if (key == "minLon")
-                grid_.minLon = std::stod(value);
-            else if (key == "maxLon")
-                grid_.maxLon = std::stod(value);
-            else if (key == "cellSizeDeg")
-                grid_.cellSizeDeg = std::stod(value);
-
-            else if (key == "coordinateSystem")
-                coordinateSystem_ = value;
-        }
-        else if (currentSection == "protobufVersion")
-        {
-            if (key == "version")
-                protobufVersion_ = std::stoi(value);
-        }
-        else if (currentSection == "redis")
-        {
-            if (key == "redisUrl")
-                redisUrl_ = value;
-            else if (key == "redisChannel")
-                redisChannel_ = value;
-        }
-        else if (currentSection == "dataSource")
-        {
-            if (key == "type")
-            {
-                if (value == "sim")
-                    sourceType_ = SourceType::Simulation;
-                else if (value == "api")
-                    sourceType_ = SourceType::Api;
-                else
-                    throw std::invalid_argument("Invalid type '" + value +
-                                                "'. Expected 'sim' or 'api'.");
-            }
-        }
-        else if (currentSection == "simulation")
-        {
-            if (key == "numFlights")
-                numFlights_ = std::stoi(value);
-            if (key == "timestepSize")
-                timestepSize_ = std::stod(value);
-        }
-        else if (currentSection == "execution")
-        {
-            if (key == "loopIntervalMs")
-                loopIntervalMs_ = std::stoi(value);
-        }
-        else if (currentSection == "zones")
-        {
-            if (key == "source")
-            {
-                if (value != "api" && value != "file")
-                    throw std::invalid_argument(
-                        "Zone source must be 'api' or 'file'.");
-                zoneSource_ = value;
-            }
-            else if (key == "apiUrl")
-                zoneApiUrl_ = value;
-            else if (key == "file")
-                zoneFile_ = value;
-            else if (key == "avoidanceApiUrl")
-                avoidanceApiUrl_ = value;
-            else if (key == "avoidanceFile")
-                avoidanceFile_ = value;
-            else if (key == "refreshSeconds")
-            {
-                zoneRefreshSeconds_ = std::stoi(value);
-                if (zoneRefreshSeconds_ <= 0)
-                    throw std::invalid_argument(
-                        "Zone refresh interval must be positive.");
-            }
-        }
-    }
-}
-
-int Configuration::getProtobufVersion() const
-{
-    return protobufVersion_;
-}
-
-int Configuration::getLoopInterval() const
-{
-    return loopIntervalMs_;
-}
-
-std::string Configuration::getCoordinateSystem() const
-{
-    return coordinateSystem_;
-}
-
-std::string Configuration::getRedisUrl() const
-{
-    return redisUrl_;
-}
-
-std::string Configuration::getRedisChannel() const
-{
-    return redisChannel_;
-}
-
-SourceType Configuration::getSourceType() const
-{
-    return sourceType_;
-}
-
-int Configuration::getNumFlights() const
-{
-    return numFlights_;
-}
-
-double Configuration::getTimestepSize() const
-{
-    return timestepSize_;
-}
-
+const GridConfig& Configuration::grid() const { return values_.grid; }
+int Configuration::getProtobufVersion() const { return values_.protobufVersion; }
+std::string Configuration::getCoordinateSystem() const { return values_.coordinateSystem; }
+std::string Configuration::getRedisUrl() const { return values_.redisUrl; }
+std::string Configuration::getRedisChannel() const { return values_.redisChannel; }
+SourceType Configuration::getSourceType() const { return values_.sourceType; }
+int Configuration::getNumFlights() const { return values_.numFlights; }
+double Configuration::getTimestepSize() const { return values_.timestepSize; }
+int Configuration::getLoopInterval() const { return values_.loopIntervalMs; }
+std::string Configuration::getZoneSource() const { return values_.zoneSource; }
+std::string Configuration::getZoneApiUrl() const { return values_.zoneApiUrl; }
+std::string Configuration::getZoneFile() const { return values_.zoneFile; }
+std::string Configuration::getAvoidanceApiUrl() const { return values_.avoidanceApiUrl; }
+std::string Configuration::getAvoidanceFile() const { return values_.avoidanceFile; }
+int Configuration::getZoneRefreshSeconds() const { return values_.zoneRefreshSeconds; }
 
 void GridConfig::computeDimensions()
 {
-    double latRange = maxLat - minLat;
-    double lonRange = maxLon - minLon;
+    if (!std::isfinite(minLat) || !std::isfinite(maxLat) ||
+        !std::isfinite(minLon) || !std::isfinite(maxLon))
+        throw std::invalid_argument("grid: all four finite bounds are required");
+    if (minLat <= -90.0 || maxLat >= 90.0 || minLon < -180.0 || maxLon > 180.0 ||
+        maxLat <= minLat || maxLon <= minLon)
+        throw std::invalid_argument("grid: bounds must be ordered and within supported geographic ranges");
+    if (!std::isfinite(cellSizeDeg) || cellSizeDeg <= 0.0)
+        throw std::invalid_argument("grid.cellSizeDeg must be finite and greater than zero");
 
-    rows = std::max(1, static_cast<int>(std::round(latRange / cellSizeDeg)));
+    const double latRange = maxLat - minLat;
+    const double lonRange = maxLon - minLon;
+    const double rowCount = std::max(1.0, std::round(latRange / cellSizeDeg));
+    const double lonScale = std::cos((minLat + maxLat) * 0.5 * std::acos(-1.0) / 180.0);
+    const double colCount = std::max(1.0, std::round(lonRange * lonScale / (latRange / rowCount)));
+    const double maxInt = std::numeric_limits<int>::max();
+    if (!std::isfinite(rowCount) || !std::isfinite(colCount) ||
+        rowCount > maxInt || colCount > maxInt || rowCount * colCount > maxInt)
+        throw std::invalid_argument("grid: dimensions exceed the supported sector count");
 
-    // Adjust cols for mercator: longitude degrees are shorter at higher latitudes
-    double midLat = (minLat + maxLat) / 2.0;
-    double lonScale = std::cos(midLat * M_PI / 180.0);
-    double effectiveLonRange = lonRange * lonScale;
-    double effectiveLatRange = latRange;
-
-    cols =
-        std::max(1, static_cast<int>(std::round(effectiveLonRange / (effectiveLatRange / rows))));
+    rows = static_cast<int>(rowCount);
+    cols = static_cast<int>(colCount);
 }
-
-
-std::string Configuration::getZoneSource() const
-{
-    return zoneSource_;
-}
-
-std::string Configuration::getZoneApiUrl() const
-{
-    return zoneApiUrl_;
-}
-
-std::string Configuration::getZoneFile() const
-{
-    return zoneFile_;
-}
-
-int Configuration::getZoneRefreshSeconds() const
-{
-    return zoneRefreshSeconds_;
-}
-
-std::string Configuration::getAvoidanceApiUrl() const
-{
-    return avoidanceApiUrl_;
-}
-
-std::string Configuration::getAvoidanceFile() const
-{
-    return avoidanceFile_;
-}
-

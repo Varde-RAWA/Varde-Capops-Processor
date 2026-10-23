@@ -47,8 +47,6 @@ inline Configuration createTestConfig()
     configFile << "maxLat=61.0\n";
     configFile << "minLon=4.0\n";
     configFile << "maxLon=6.0\n";
-    configFile << "rows=3\n";
-    configFile << "cols=3\n";
     configFile << "cellSizeDeg=0.1\n";
     configFile << "coordinateSystem=WGS84\n";
     configFile << "\n";
@@ -89,8 +87,6 @@ inline Configuration createTestConfigApi()
     configFile << "maxLat=61.0\n";
     configFile << "minLon=4.0\n";
     configFile << "maxLon=6.0\n";
-    configFile << "rows=3\n";
-    configFile << "cols=3\n";
     configFile << "coordinateSystem=WGS84\n";
     configFile << "\n";
     configFile << "[protobufVersion]\n";
