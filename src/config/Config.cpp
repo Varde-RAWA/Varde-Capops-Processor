@@ -33,6 +33,7 @@ std::string Configuration::getZoneFile() const { return values_.zoneFile; }
 std::string Configuration::getAvoidanceApiUrl() const { return values_.avoidanceApiUrl; }
 std::string Configuration::getAvoidanceFile() const { return values_.avoidanceFile; }
 int Configuration::getZoneRefreshSeconds() const { return values_.zoneRefreshSeconds; }
+std::string Configuration::getScenarioFiles() const { return values_.scenarioFiles; }
 
 void GridConfig::computeDimensions()
 {

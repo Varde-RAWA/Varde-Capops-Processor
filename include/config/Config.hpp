@@ -32,6 +32,7 @@ struct ConfigurationValues
     std::string zoneFile = "data/zones.geojson";
     std::string avoidanceApiUrl = "http://localhost:5040/collections/avoidance-areas/items";
     std::string avoidanceFile = "data/avoidance-areas.geojson";
+    std::string scenarioFiles = "scenarios/S1.geojson";
     int zoneRefreshSeconds = 30;
 };
 
@@ -55,6 +56,7 @@ public:
     std::string getZoneFile() const;
     std::string getAvoidanceApiUrl() const;
     std::string getAvoidanceFile() const;
+    std::string getScenarioFiles() const;
     int getZoneRefreshSeconds() const;
 
 private:

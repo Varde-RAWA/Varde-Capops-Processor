@@ -1,0 +1,3455 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "fa0001:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.543765,
+          59.09752
+        ]
+      },
+      "properties": {
+        "icao24": "fa0001",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.768923
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 245,
+        "groundTrackDeg": 297.291611
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0002:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.689128,
+          60.745141
+        ]
+      },
+      "properties": {
+        "icao24": "fa0002",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.7044
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 240,
+        "groundTrackDeg": 231.518901
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0003:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.902688,
+          60.010175
+        ]
+      },
+      "properties": {
+        "icao24": "fa0003",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.316251
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 440,
+        "groundTrackDeg": 212.74181
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0004:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.686127,
+          59.903497
+        ]
+      },
+      "properties": {
+        "icao24": "fa0004",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.935837,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 390,
+        "groundTrackDeg": 340.899836
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0005:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.376977,
+          59.345411
+        ]
+      },
+      "properties": {
+        "icao24": "fa0005",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.719116
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 365,
+        "groundTrackDeg": 74.331165
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0006:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.427194,
+          60.660239
+        ]
+      },
+      "properties": {
+        "icao24": "fa0006",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.522048
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 400,
+        "groundTrackDeg": 94.526062
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0007:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.14129,
+          60.89892
+        ]
+      },
+      "properties": {
+        "icao24": "fa0007",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.689247,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 360,
+        "groundTrackDeg": 200.499083
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0008:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.301673,
+          60.388686
+        ]
+      },
+      "properties": {
+        "icao24": "fa0008",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.38745
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 235,
+        "groundTrackDeg": 228.516458
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0009:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.385739,
+          60.696319
+        ]
+      },
+      "properties": {
+        "icao24": "fa0009",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.266714
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 270,
+        "groundTrackDeg": 229.131514
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa000a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.493706,
+          59.448063
+        ]
+      },
+      "properties": {
+        "icao24": "fa000a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.044498,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 351.576451
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa000b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.425611,
+          59.375163
+        ]
+      },
+      "properties": {
+        "icao24": "fa000b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.495366,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 445,
+        "groundTrackDeg": 343.645466
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa000c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.906499,
+          59.666137
+        ]
+      },
+      "properties": {
+        "icao24": "fa000c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.660387,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 340,
+        "groundTrackDeg": 115.256229
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa000d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.614543,
+          59.175758
+        ]
+      },
+      "properties": {
+        "icao24": "fa000d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.308213
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 340,
+        "groundTrackDeg": 47.065568
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa000e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.879244,
+          59.998539
+        ]
+      },
+      "properties": {
+        "icao24": "fa000e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.322406
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 315,
+        "groundTrackDeg": 78.238221
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa000f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.594558,
+          60.465479
+        ]
+      },
+      "properties": {
+        "icao24": "fa000f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.473866
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 375,
+        "groundTrackDeg": 89.712903
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0010:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.461786,
+          60.944919
+        ]
+      },
+      "properties": {
+        "icao24": "fa0010",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.351753
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 250,
+        "groundTrackDeg": 203.871923
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0011:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.646081,
+          59.353966
+        ]
+      },
+      "properties": {
+        "icao24": "fa0011",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.701434
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 365,
+        "groundTrackDeg": 51.672458
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0012:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.373965,
+          59.939295
+        ]
+      },
+      "properties": {
+        "icao24": "fa0012",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.224062
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 250,
+        "groundTrackDeg": 283.521844
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0013:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.70867,
+          60.070244
+        ]
+      },
+      "properties": {
+        "icao24": "fa0013",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.399783
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 330,
+        "groundTrackDeg": 283.752417
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0014:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.745584,
+          59.912075
+        ]
+      },
+      "properties": {
+        "icao24": "fa0014",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.801334
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 420,
+        "groundTrackDeg": 51.68
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0015:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.021653,
+          60.014595
+        ]
+      },
+      "properties": {
+        "icao24": "fa0015",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.277841
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 420,
+        "groundTrackDeg": 279.920433
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0016:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.424984,
+          59.340395
+        ]
+      },
+      "properties": {
+        "icao24": "fa0016",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.769977,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 200,
+        "groundTrackDeg": 22.576219
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0017:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.385884,
+          59.978351
+        ]
+      },
+      "properties": {
+        "icao24": "fa0017",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.679817
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 305,
+        "groundTrackDeg": 255.902343
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0018:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.275908,
+          60.718218
+        ]
+      },
+      "properties": {
+        "icao24": "fa0018",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.105538
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 131.597239
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0019:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.86414,
+          60.062142
+        ]
+      },
+      "properties": {
+        "icao24": "fa0019",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.342053
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 275,
+        "groundTrackDeg": 278.279879
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa001a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.083721,
+          60.707623
+        ]
+      },
+      "properties": {
+        "icao24": "fa001a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.917539,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 166.487366
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa001b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.830501,
+          59.808085
+        ]
+      },
+      "properties": {
+        "icao24": "fa001b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.966942
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 295,
+        "groundTrackDeg": 74.760697
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa001c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.299701,
+          59.089965
+        ]
+      },
+      "properties": {
+        "icao24": "fa001c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.667006,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 42.314138
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa001d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.81058,
+          59.16186
+        ]
+      },
+      "properties": {
+        "icao24": "fa001d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.103359
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 267.666505
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa001e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.055209,
+          59.579107
+        ]
+      },
+      "properties": {
+        "icao24": "fa001e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.735996,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 410,
+        "groundTrackDeg": 353.464644
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa001f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.997689,
+          59.948649
+        ]
+      },
+      "properties": {
+        "icao24": "fa001f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.832502,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 390,
+        "groundTrackDeg": 155.992826
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0020:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.431761,
+          59.831094
+        ]
+      },
+      "properties": {
+        "icao24": "fa0020",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.837768,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 240,
+        "groundTrackDeg": 124.179338
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0021:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.286389,
+          60.433606
+        ]
+      },
+      "properties": {
+        "icao24": "fa0021",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.779955,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 129.551115
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0022:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.141514,
+          59.316346
+        ]
+      },
+      "properties": {
+        "icao24": "fa0022",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.265438
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 395,
+        "groundTrackDeg": 311.106735
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0023:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.201287,
+          60.676337
+        ]
+      },
+      "properties": {
+        "icao24": "fa0023",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.230087
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 205,
+        "groundTrackDeg": 254.064619
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0024:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.829085,
+          60.810097
+        ]
+      },
+      "properties": {
+        "icao24": "fa0024",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.244256,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 410,
+        "groundTrackDeg": 189.003638
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0025:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.883614,
+          59.811977
+        ]
+      },
+      "properties": {
+        "icao24": "fa0025",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.545541
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 325,
+        "groundTrackDeg": 99.679907
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0026:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.699729,
+          60.868904
+        ]
+      },
+      "properties": {
+        "icao24": "fa0026",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.086189
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 415,
+        "groundTrackDeg": 125.070133
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0027:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.653708,
+          59.613745
+        ]
+      },
+      "properties": {
+        "icao24": "fa0027",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.177839
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 225,
+        "groundTrackDeg": 71.517234
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0028:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.967105,
+          59.158614
+        ]
+      },
+      "properties": {
+        "icao24": "fa0028",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.585541,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 270,
+        "groundTrackDeg": 338.856336
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0029:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.27183,
+          60.014874
+        ]
+      },
+      "properties": {
+        "icao24": "fa0029",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.013232
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 305,
+        "groundTrackDeg": 118.325761
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa002a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.624725,
+          60.839033
+        ]
+      },
+      "properties": {
+        "icao24": "fa002a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.342071,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 235,
+        "groundTrackDeg": 155.415393
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa002b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.684977,
+          60.158977
+        ]
+      },
+      "properties": {
+        "icao24": "fa002b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.188197,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 340,
+        "groundTrackDeg": 16.76835
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa002c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.980875,
+          59.801993
+        ]
+      },
+      "properties": {
+        "icao24": "fa002c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.477689
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 102.093665
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa002d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.08633,
+          60.230203
+        ]
+      },
+      "properties": {
+        "icao24": "fa002d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.747141,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 295,
+        "groundTrackDeg": 132.7256
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa002e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.02295,
+          59.301667
+        ]
+      },
+      "properties": {
+        "icao24": "fa002e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.873464
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 440,
+        "groundTrackDeg": 299.092168
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa002f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.793806,
+          60.212188
+        ]
+      },
+      "properties": {
+        "icao24": "fa002f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.299077
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 445,
+        "groundTrackDeg": 81.681463
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0030:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.217577,
+          60.310439
+        ]
+      },
+      "properties": {
+        "icao24": "fa0030",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.193038
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 245,
+        "groundTrackDeg": 129.136319
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0031:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.945425,
+          59.345351
+        ]
+      },
+      "properties": {
+        "icao24": "fa0031",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.516657
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 290,
+        "groundTrackDeg": 276.529585
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0032:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.731239,
+          60.670534
+        ]
+      },
+      "properties": {
+        "icao24": "fa0032",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.699917,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 240,
+        "groundTrackDeg": 196.92099
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0033:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.523709,
+          60.625761
+        ]
+      },
+      "properties": {
+        "icao24": "fa0033",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.597021
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 315,
+        "groundTrackDeg": 230.160541
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0034:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.68017,
+          59.889487
+        ]
+      },
+      "properties": {
+        "icao24": "fa0034",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.242374
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 78.001669
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0035:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.735699,
+          60.362937
+        ]
+      },
+      "properties": {
+        "icao24": "fa0035",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.360774,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 445,
+        "groundTrackDeg": 230.969397
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0036:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.627566,
+          59.292146
+        ]
+      },
+      "properties": {
+        "icao24": "fa0036",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.351038,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 355,
+        "groundTrackDeg": 12.276054
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0037:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.869298,
+          59.524107
+        ]
+      },
+      "properties": {
+        "icao24": "fa0037",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.260901,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 265,
+        "groundTrackDeg": 348.11302
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0038:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.660479,
+          59.499801
+        ]
+      },
+      "properties": {
+        "icao24": "fa0038",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.811967
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 380,
+        "groundTrackDeg": 305.306846
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0039:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.146667,
+          60.449472
+        ]
+      },
+      "properties": {
+        "icao24": "fa0039",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.902435,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 310,
+        "groundTrackDeg": 58.026865
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa003a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.090542,
+          60.546012
+        ]
+      },
+      "properties": {
+        "icao24": "fa003a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.197537
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 355,
+        "groundTrackDeg": 133.404773
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa003b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.240244,
+          60.561156
+        ]
+      },
+      "properties": {
+        "icao24": "fa003b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.920086,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 375,
+        "groundTrackDeg": 185.79251
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa003c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.330222,
+          60.692271
+        ]
+      },
+      "properties": {
+        "icao24": "fa003c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.504829
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 425,
+        "groundTrackDeg": 132.36609
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa003d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.608746,
+          60.914184
+        ]
+      },
+      "properties": {
+        "icao24": "fa003d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.88474
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 315,
+        "groundTrackDeg": 267.83035
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa003e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.199203,
+          60.183485
+        ]
+      },
+      "properties": {
+        "icao24": "fa003e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.879866,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 425,
+        "groundTrackDeg": 58.822397
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa003f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.501019,
+          60.759059
+        ]
+      },
+      "properties": {
+        "icao24": "fa003f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.813522,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 200,
+        "groundTrackDeg": 175.01204
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0040:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.077689,
+          60.582371
+        ]
+      },
+      "properties": {
+        "icao24": "fa0040",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.121995,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 51.525791
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0041:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.470464,
+          59.18295
+        ]
+      },
+      "properties": {
+        "icao24": "fa0041",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.247623
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 250,
+        "groundTrackDeg": 50.482635
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0042:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.857042,
+          59.620612
+        ]
+      },
+      "properties": {
+        "icao24": "fa0042",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.985795
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 330,
+        "groundTrackDeg": 284.231918
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0043:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.212209,
+          59.414496
+        ]
+      },
+      "properties": {
+        "icao24": "fa0043",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.882377
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 275,
+        "groundTrackDeg": 31.643463
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0044:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.450508,
+          59.621805
+        ]
+      },
+      "properties": {
+        "icao24": "fa0044",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.168138,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 290,
+        "groundTrackDeg": 193.137713
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0045:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.726564,
+          60.151971
+        ]
+      },
+      "properties": {
+        "icao24": "fa0045",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.587929
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 295,
+        "groundTrackDeg": 116.596966
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0046:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.043579,
+          60.558097
+        ]
+      },
+      "properties": {
+        "icao24": "fa0046",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.43599
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 235,
+        "groundTrackDeg": 97.273196
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0047:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.156767,
+          60.311322
+        ]
+      },
+      "properties": {
+        "icao24": "fa0047",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.727582,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 335,
+        "groundTrackDeg": 149.126618
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0048:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.926099,
+          59.428347
+        ]
+      },
+      "properties": {
+        "icao24": "fa0048",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.530246
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 282.336054
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0049:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.826123,
+          60.73366
+        ]
+      },
+      "properties": {
+        "icao24": "fa0049",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.262745
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 420,
+        "groundTrackDeg": 144.277016
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa004a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.608646,
+          59.330386
+        ]
+      },
+      "properties": {
+        "icao24": "fa004a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.925255,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 390,
+        "groundTrackDeg": 22.031374
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa004b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.90348,
+          60.577809
+        ]
+      },
+      "properties": {
+        "icao24": "fa004b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.507543
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 310,
+        "groundTrackDeg": 125.217318
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa004c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.628133,
+          59.280581
+        ]
+      },
+      "properties": {
+        "icao24": "fa004c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.052265
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 445,
+        "groundTrackDeg": 292.661401
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa004d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.372264,
+          60.855075
+        ]
+      },
+      "properties": {
+        "icao24": "fa004d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.956669
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 420,
+        "groundTrackDeg": 138.750381
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa004e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.714289,
+          60.773024
+        ]
+      },
+      "properties": {
+        "icao24": "fa004e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.807085,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 400,
+        "groundTrackDeg": 178.527828
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa004f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.060847,
+          59.519756
+        ]
+      },
+      "properties": {
+        "icao24": "fa004f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.263375,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 415,
+        "groundTrackDeg": 37.230575
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0050:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.494319,
+          59.571735
+        ]
+      },
+      "properties": {
+        "icao24": "fa0050",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.596261
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 345,
+        "groundTrackDeg": 271.116715
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0051:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.296867,
+          60.076289
+        ]
+      },
+      "properties": {
+        "icao24": "fa0051",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.011983,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 265,
+        "groundTrackDeg": 211.010609
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0052:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.805035,
+          59.172035
+        ]
+      },
+      "properties": {
+        "icao24": "fa0052",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.474096,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 225,
+        "groundTrackDeg": 326.69256
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0053:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.856654,
+          59.848273
+        ]
+      },
+      "properties": {
+        "icao24": "fa0053",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.206793
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 205,
+        "groundTrackDeg": 77.167142
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0054:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.391255,
+          60.50463
+        ]
+      },
+      "properties": {
+        "icao24": "fa0054",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.467585,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 330,
+        "groundTrackDeg": 212.361836
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0055:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.988553,
+          60.671551
+        ]
+      },
+      "properties": {
+        "icao24": "fa0055",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.611563
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 440,
+        "groundTrackDeg": 155.167005
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0056:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.169486,
+          60.755842
+        ]
+      },
+      "properties": {
+        "icao24": "fa0056",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.382285,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 210,
+        "groundTrackDeg": 206.569892
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0057:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.566543,
+          60.32086
+        ]
+      },
+      "properties": {
+        "icao24": "fa0057",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.480406
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 255,
+        "groundTrackDeg": 82.426383
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0058:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.874816,
+          60.064835
+        ]
+      },
+      "properties": {
+        "icao24": "fa0058",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.346685,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 260,
+        "groundTrackDeg": 215.864138
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0059:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.43072,
+          59.395285
+        ]
+      },
+      "properties": {
+        "icao24": "fa0059",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.795293
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 340,
+        "groundTrackDeg": 282.935765
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa005a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.366252,
+          60.721316
+        ]
+      },
+      "properties": {
+        "icao24": "fa005a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.888644
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 284.15866
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa005b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.096809,
+          60.288334
+        ]
+      },
+      "properties": {
+        "icao24": "fa005b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.966253,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 205,
+        "groundTrackDeg": 354.731041
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa005c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.473209,
+          59.503235
+        ]
+      },
+      "properties": {
+        "icao24": "fa005c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.268174,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 405,
+        "groundTrackDeg": 231.112366
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa005d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.777913,
+          60.507106
+        ]
+      },
+      "properties": {
+        "icao24": "fa005d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.10219
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 250,
+        "groundTrackDeg": 253.450929
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa005e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.083388,
+          59.361155
+        ]
+      },
+      "properties": {
+        "icao24": "fa005e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.692169
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 365,
+        "groundTrackDeg": 310.357747
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa005f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.596952,
+          60.408528
+        ]
+      },
+      "properties": {
+        "icao24": "fa005f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.349696
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 310,
+        "groundTrackDeg": 265.706648
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0060:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.447415,
+          60.517714
+        ]
+      },
+      "properties": {
+        "icao24": "fa0060",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.120903
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 450,
+        "groundTrackDeg": 102.821803
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0061:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.102278,
+          59.709687
+        ]
+      },
+      "properties": {
+        "icao24": "fa0061",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.809058
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 350,
+        "groundTrackDeg": 273.645507
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0062:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.099343,
+          59.848112
+        ]
+      },
+      "properties": {
+        "icao24": "fa0062",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.901553
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 400,
+        "groundTrackDeg": 88.433581
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0063:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.808504,
+          59.877426
+        ]
+      },
+      "properties": {
+        "icao24": "fa0063",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.922635,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 435,
+        "groundTrackDeg": 2.947063
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0064:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.071102,
+          59.93326
+        ]
+      },
+      "properties": {
+        "icao24": "fa0064",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.209993
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 320,
+        "groundTrackDeg": 244.751333
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0065:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.488362,
+          59.513341
+        ]
+      },
+      "properties": {
+        "icao24": "fa0065",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.040015,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 350,
+        "groundTrackDeg": 310.166294
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0066:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.16193,
+          60.66681
+        ]
+      },
+      "properties": {
+        "icao24": "fa0066",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.977168,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 350,
+        "groundTrackDeg": 166.447367
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0067:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.140668,
+          60.182695
+        ]
+      },
+      "properties": {
+        "icao24": "fa0067",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.08938
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 93.768267
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0068:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.383891,
+          60.418142
+        ]
+      },
+      "properties": {
+        "icao24": "fa0068",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.584205
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 410,
+        "groundTrackDeg": 84.670726
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0069:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.569021,
+          59.982561
+        ]
+      },
+      "properties": {
+        "icao24": "fa0069",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.306931,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 375,
+        "groundTrackDeg": 159.215023
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa006a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.74797,
+          59.631791
+        ]
+      },
+      "properties": {
+        "icao24": "fa006a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.908365,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 355,
+        "groundTrackDeg": 325.598949
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa006b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.709465,
+          60.467277
+        ]
+      },
+      "properties": {
+        "icao24": "fa006b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.774418,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 197.55099
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa006c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.280637,
+          60.461474
+        ]
+      },
+      "properties": {
+        "icao24": "fa006c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.35195
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 295,
+        "groundTrackDeg": 94.687483
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa006d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.930558,
+          59.575349
+        ]
+      },
+      "properties": {
+        "icao24": "fa006d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.035988,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 325,
+        "groundTrackDeg": 342.243344
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa006e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.873991,
+          60.631994
+        ]
+      },
+      "properties": {
+        "icao24": "fa006e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.334185
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 205,
+        "groundTrackDeg": 235.593874
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa006f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.811272,
+          59.290508
+        ]
+      },
+      "properties": {
+        "icao24": "fa006f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.142073
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 255,
+        "groundTrackDeg": 264.07622
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0070:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.537692,
+          60.480305
+        ]
+      },
+      "properties": {
+        "icao24": "fa0070",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.356166,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 410,
+        "groundTrackDeg": 216.169202
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0071:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.916985,
+          59.697341
+        ]
+      },
+      "properties": {
+        "icao24": "fa0071",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.514296
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 250,
+        "groundTrackDeg": 99.926199
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0072:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.256251,
+          59.811344
+        ]
+      },
+      "properties": {
+        "icao24": "fa0072",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.294947
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 265,
+        "groundTrackDeg": 286.502322
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0073:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.631871,
+          60.119395
+        ]
+      },
+      "properties": {
+        "icao24": "fa0073",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.27292,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 445,
+        "groundTrackDeg": 20.14472
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0074:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.031329,
+          60.202004
+        ]
+      },
+      "properties": {
+        "icao24": "fa0074",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.200373,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 365,
+        "groundTrackDeg": 175.9688
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0075:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.807006,
+          59.89117
+        ]
+      },
+      "properties": {
+        "icao24": "fa0075",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.495205,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 450,
+        "groundTrackDeg": 37.621661
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0076:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.472007,
+          60.208299
+        ]
+      },
+      "properties": {
+        "icao24": "fa0076",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.037282,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 295,
+        "groundTrackDeg": 19.762761
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0077:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.08212,
+          59.204256
+        ]
+      },
+      "properties": {
+        "icao24": "fa0077",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.889186,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 200,
+        "groundTrackDeg": 356.833919
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0078:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.643219,
+          60.359805
+        ]
+      },
+      "properties": {
+        "icao24": "fa0078",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.902235,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 325,
+        "groundTrackDeg": 174.578853
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0079:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.791651,
+          59.91266
+        ]
+      },
+      "properties": {
+        "icao24": "fa0079",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.718221,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 358.043008
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa007a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.708042,
+          60.084669
+        ]
+      },
+      "properties": {
+        "icao24": "fa007a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          5.844409,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 32.046174
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa007b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.282588,
+          60.555994
+        ]
+      },
+      "properties": {
+        "icao24": "fa007b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.662636
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 395,
+        "groundTrackDeg": 86.651137
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa007c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.534979,
+          60.358488
+        ]
+      },
+      "properties": {
+        "icao24": "fa007c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.471387,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 440,
+        "groundTrackDeg": 66.498357
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa007d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.975801,
+          59.20284
+        ]
+      },
+      "properties": {
+        "icao24": "fa007d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.944607
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 310,
+        "groundTrackDeg": 306.389601
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa007e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.150873,
+          59.484956
+        ]
+      },
+      "properties": {
+        "icao24": "fa007e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.322548,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 205,
+        "groundTrackDeg": 46.937992
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa007f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.948332,
+          60.327335
+        ]
+      },
+      "properties": {
+        "icao24": "fa007f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.825022,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 410,
+        "groundTrackDeg": 229.569161
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0080:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.073959,
+          59.890236
+        ]
+      },
+      "properties": {
+        "icao24": "fa0080",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.093997,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 415,
+        "groundTrackDeg": 335.91486
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0081:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.829315,
+          59.94302
+        ]
+      },
+      "properties": {
+        "icao24": "fa0081",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.448726
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 270,
+        "groundTrackDeg": 255.512001
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0082:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.336234,
+          60.36798
+        ]
+      },
+      "properties": {
+        "icao24": "fa0082",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.125134,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 215,
+        "groundTrackDeg": 350.474623
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0083:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.823821,
+          59.647583
+        ]
+      },
+      "properties": {
+        "icao24": "fa0083",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.270964,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 425,
+        "groundTrackDeg": 348.244065
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0084:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.267216,
+          59.052187
+        ]
+      },
+      "properties": {
+        "icao24": "fa0084",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.650802,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 285,
+        "groundTrackDeg": 5.812466
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0085:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.071914,
+          60.233004
+        ]
+      },
+      "properties": {
+        "icao24": "fa0085",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.467871
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 325,
+        "groundTrackDeg": 233.224501
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0086:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.758653,
+          60.376675
+        ]
+      },
+      "properties": {
+        "icao24": "fa0086",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.308325,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 305,
+        "groundTrackDeg": 310.548129
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0087:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.818153,
+          59.640425
+        ]
+      },
+      "properties": {
+        "icao24": "fa0087",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.831534
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 250,
+        "groundTrackDeg": 277.668704
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0088:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.849647,
+          59.273186
+        ]
+      },
+      "properties": {
+        "icao24": "fa0088",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.344653
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 330,
+        "groundTrackDeg": 45.585786
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0089:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.034601,
+          59.569507
+        ]
+      },
+      "properties": {
+        "icao24": "fa0089",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.378793,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 400,
+        "groundTrackDeg": 25.607783
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa008a:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.199934,
+          59.778813
+        ]
+      },
+      "properties": {
+        "icao24": "fa008a",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          60.072145
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 3048,
+        "groundSpeedKt": 230,
+        "groundTrackDeg": 71.966887
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa008b:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.127365,
+          60.551012
+        ]
+      },
+      "properties": {
+        "icao24": "fa008b",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.993792,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 320,
+        "groundTrackDeg": 44.138243
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa008c:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.250143,
+          59.587394
+        ]
+      },
+      "properties": {
+        "icao24": "fa008c",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.507002
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 415,
+        "groundTrackDeg": 299.277418
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa008d:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.424516,
+          59.89844
+        ]
+      },
+      "properties": {
+        "icao24": "fa008d",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          59.400131
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 365,
+        "groundTrackDeg": 253.775855
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa008e:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.825844,
+          59.661377
+        ]
+      },
+      "properties": {
+        "icao24": "fa008e",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.907677
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 7620,
+        "groundSpeedKt": 370,
+        "groundTrackDeg": 323.649219
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa008f:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.960894,
+          60.523535
+        ]
+      },
+      "properties": {
+        "icao24": "fa008f",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.448309
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 365,
+        "groundTrackDeg": 260.866557
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0090:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.555707,
+          60.311009
+        ]
+      },
+      "properties": {
+        "icao24": "fa0090",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.465989,
+          60.99
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 215,
+        "groundTrackDeg": 54.335341
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0091:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.54236,
+          60.884172
+        ]
+      },
+      "properties": {
+        "icao24": "fa0091",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          4.457414,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 240,
+        "groundTrackDeg": 166.636073
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0092:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.101209,
+          59.918163
+        ]
+      },
+      "properties": {
+        "icao24": "fa0092",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.698298
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 9144,
+        "groundSpeedKt": 265,
+        "groundTrackDeg": 103.074382
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0093:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.34183,
+          60.534898
+        ]
+      },
+      "properties": {
+        "icao24": "fa0093",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.99,
+          59.05595
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 6096,
+        "groundSpeedKt": 235,
+        "groundTrackDeg": 129.493681
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0094:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.371885,
+          60.669449
+        ]
+      },
+      "properties": {
+        "icao24": "fa0094",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          6.426526,
+          59.01
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 415,
+        "groundTrackDeg": 179.075939
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0095:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.452294,
+          59.118208
+        ]
+      },
+      "properties": {
+        "icao24": "fa0095",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.359887
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 4572,
+        "groundSpeedKt": 300,
+        "groundTrackDeg": 305.098616
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa0096:2026-10-05T12:00:00Z",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.962389,
+          59.874546
+        ]
+      },
+      "properties": {
+        "icao24": "fa0096",
+        "timestamp": "2026-10-05T12:00:00Z",
+        "destination": [
+          3.01,
+          60.317761
+        ],
+        "startDelaySeconds": 0,
+        "altitudeM": 1829,
+        "groundSpeedKt": 395,
+        "groundTrackDeg": 286.652343
+      }
+    }
+  ]
+}

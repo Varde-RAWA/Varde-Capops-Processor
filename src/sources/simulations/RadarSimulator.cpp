@@ -4,6 +4,13 @@
 #include <stdexcept>
 #include <utility>
 
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QStringList>
+
 RadarSimulator::RadarSimulator(GridConfig config)
 {
     timeStep_ = 1.0;
@@ -308,4 +315,146 @@ void RadarSimulator::updateVelocity(const FlightID &id)
             longitudeDifference / seconds
         };
     }
+}
+
+void RadarSimulator::initializeFromScenarioFiles(const std::string& paths)
+{
+    std::vector<FlightPosition> starts;
+    std::vector<FlightPosition> destinations;
+    std::vector<double> speeds;
+
+    const auto filenames =
+        QString::fromStdString(paths).split(',', Qt::KeepEmptyParts);
+
+    for (const auto& entry : filenames)
+    {
+        const QString filename = entry.trimmed();
+        const std::string path = filename.toStdString();
+
+        if (filename.isEmpty())
+        {
+            throw std::runtime_error(
+                "simulation.scenarioFiles contains an empty filename");
+        }
+
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            throw std::runtime_error(
+                path + ": cannot open scenario: " +
+                file.errorString().toStdString());
+        }
+
+        QJsonParseError parseError;
+        const auto document =
+            QJsonDocument::fromJson(file.readAll(), &parseError);
+
+        if (parseError.error != QJsonParseError::NoError)
+        {
+            throw std::runtime_error(
+                path + ": invalid JSON: " +
+                parseError.errorString().toStdString());
+        }
+
+        const auto root = document.object();
+        if (!document.isObject() ||
+            root.value("type").toString() != "FeatureCollection" ||
+            !root.value("features").isArray())
+        {
+            throw std::runtime_error(
+                path + ": expected a GeoJSON FeatureCollection");
+        }
+
+        const auto features = root.value("features").toArray();
+        if (features.isEmpty())
+        {
+            throw std::runtime_error(path + ": scenario has no aircraft");
+        }
+
+        for (qsizetype i = 0; i < features.size(); ++i)
+        {
+            const std::string context =
+                path + ": feature " + std::to_string(i + 1);
+
+            const auto feature = features.at(i).toObject();
+            const auto geometry = feature.value("geometry").toObject();
+            const auto properties = feature.value("properties").toObject();
+
+            if (feature.value("type").toString() != "Feature" ||
+                geometry.value("type").toString() != "Point" ||
+                !feature.value("properties").isObject())
+            {
+                throw std::runtime_error(
+                    context + ": expected a Point feature with properties");
+            }
+
+            const auto readPosition =
+                [&](const QJsonValue& value,
+                    const std::string& field) -> FlightPosition
+            {
+                const auto coordinates = value.toArray();
+
+                if (!value.isArray() || coordinates.size() != 2 ||
+                    !coordinates.at(0).isDouble() ||
+                    !coordinates.at(1).isDouble())
+                {
+                    throw std::runtime_error(
+                        context + ": " + field +
+                        " must contain [longitude, latitude]");
+                }
+
+                const double lon = coordinates.at(0).toDouble();
+                const double lat = coordinates.at(1).toDouble();
+
+                // Match the geographic limits supported by the simulator.
+                if (!std::isfinite(lat) || !std::isfinite(lon) ||
+                    std::abs(lat) >= 89.0 || std::abs(lon) > 180.0)
+                {
+                    throw std::runtime_error(
+                        context + ": invalid " + field);
+                }
+
+                // GeoJSON uses longitude, latitude.
+                // RadarSimulator uses latitude, longitude.
+                return {lat, lon};
+            };
+
+            const auto start =
+                readPosition(geometry.value("coordinates"), "coordinates");
+            const auto destination =
+                readPosition(properties.value("destination"), "destination");
+
+            const auto speedValue = properties.value("groundSpeedKt");
+            const double knots = speedValue.toDouble();
+
+            if (!speedValue.isDouble() ||
+                !std::isfinite(knots) || knots <= 0.0)
+            {
+                throw std::runtime_error(
+                    context + ": groundSpeedKt must be a positive number");
+            }
+
+            // Delayed activation needs additional simulator support.
+            // Reject it explicitly instead of starting those flights early.
+            const auto delay = properties.value("startDelaySeconds");
+            if (!delay.isUndefined() &&
+                (!delay.isDouble() || delay.toDouble() != 0.0))
+            {
+                throw std::runtime_error(
+                    context + ": only startDelaySeconds=0 is supported");
+            }
+
+            starts.push_back(start);
+            destinations.push_back(destination);
+
+            speeds.push_back(5 * knots * 1852.0 / 3600.0);
+        }
+    }
+
+    // Initialize once, after collecting every file's aircraft.
+    // Calling this inside the loop would replace the previous file's flights.
+    initializeFlights(
+        std::move(starts),
+        std::move(destinations),
+        std::move(speeds));
 }
