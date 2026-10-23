@@ -174,7 +174,7 @@ Aircraft fly toward their destinations and stop when they arrive. Approved Vekto
 
 The current simulator applies a hardcoded 5× speed multiplier in `RadarSimulator.cpp`. This affects both movement and reported ground speed. Changing this multiplier requires rebuilding.
 
-Scenario ICAO identifiers and altitudes are not yet preserved: the simulator generates `SIM-0`, `SIM-1`, etc. and synthetic altitudes. Timestamps use current time, and headings are calculated from the flight route.
+Scenario aircraft use their supplied `icao24` identifiers, normalized to lowercase. Each must contain six hexadecimal characters and be unique across all selected files. Altitudes are still generated rather than read from `altitudeM`. Timestamps use current time, and headings are calculated from the flight route.
 
 Available scenarios:
 
