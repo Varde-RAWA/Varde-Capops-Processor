@@ -29,9 +29,11 @@ class RadarSimulator
 
     void initializeFlights(int numFlights);
 
-    void initializeFlights(std::vector<FlightPosition> startPositions,
-                           std::vector<FlightPosition> endPositions, std::vector<double> speeds
-    );
+    void initializeFlights(
+    std::vector<FlightPosition> startPositions,
+    std::vector<FlightPosition> endPositions,
+    std::vector<double> speeds,
+    std::vector<FlightID> ids = {});
 
     void initializeFromScenarioFiles(const std::string& paths);
 

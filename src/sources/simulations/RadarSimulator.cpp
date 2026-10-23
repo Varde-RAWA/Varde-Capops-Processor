@@ -3,6 +3,8 @@
 #include <random>
 #include <stdexcept>
 #include <utility>
+#include <algorithm>
+#include <unordered_set>
 
 #include <QFile>
 #include <QJsonArray>
@@ -55,10 +57,31 @@ void RadarSimulator::initializeFlights(int numFlights)
 void RadarSimulator::initializeFlights(
     std::vector<FlightPosition> starts,
     std::vector<FlightPosition> destinations,
-    std::vector<double> speeds)
+    std::vector<double> speeds,
+    std::vector<FlightID> ids)
 {
+    if (ids.empty())
+    {
+        for (std::size_t i = 0; i < starts.size(); ++i)
+        {
+            ids.push_back("SIM-" + std::to_string(i));
+        }
+    }
+
+    std::unordered_set<FlightID> uniqueIds;
+
+    for (const auto& id : ids)
+    {
+        if (id.empty() || !uniqueIds.insert(id).second)
+        {
+            throw std::invalid_argument(
+                "Simulated flight IDs must be nonempty and unique: " + id);
+        }
+    }
+
     if (starts.size() != destinations.size() ||
-        starts.size() != speeds.size())
+        starts.size() != speeds.size() ||
+        starts.size() != ids.size())
     {
         throw std::invalid_argument("Input vectors must have the same size");
     }
@@ -92,7 +115,7 @@ void RadarSimulator::initializeFlights(
 
     for (std::size_t i = 0; i < starts.size(); ++i)
     {
-        const FlightID id = "SIM-" + std::to_string(i);
+        const FlightID& id = ids[i];
 
         flightIds_.push_back(id);
         flightPositions_[id] = starts[i];
@@ -322,6 +345,8 @@ void RadarSimulator::initializeFromScenarioFiles(const std::string& paths)
     std::vector<FlightPosition> starts;
     std::vector<FlightPosition> destinations;
     std::vector<double> speeds;
+    std::vector<FlightID> ids;
+    std::unordered_set<FlightID> seenIds;
 
     const auto filenames =
         QString::fromStdString(paths).split(',', Qt::KeepEmptyParts);
@@ -388,6 +413,30 @@ void RadarSimulator::initializeFromScenarioFiles(const std::string& paths)
                     context + ": expected a Point feature with properties");
             }
 
+            const auto icaoValue = properties.value("icao24");
+            const std::string icao =
+                icaoValue.toString().toLower().toStdString();
+
+            const bool validIcao =
+                icaoValue.isString() && icao.size() == 6 &&
+                std::all_of(icao.begin(), icao.end(), [](char c)
+                {
+                    return (c >= '0' && c <= '9') ||
+                           (c >= 'a' && c <= 'f');
+                });
+
+            if (!validIcao)
+            {
+                throw std::runtime_error(
+                    context + ": icao24 must contain six hexadecimal characters");
+            }
+
+            if (!seenIds.insert(icao).second)
+            {
+                throw std::runtime_error(
+                    context + ": duplicate icao24 across selected scenarios: " + icao);
+            }
+
             const auto readPosition =
                 [&](const QJsonValue& value,
                     const std::string& field) -> FlightPosition
@@ -444,6 +493,7 @@ void RadarSimulator::initializeFromScenarioFiles(const std::string& paths)
                     context + ": only startDelaySeconds=0 is supported");
             }
 
+            ids.push_back(icao);
             starts.push_back(start);
             destinations.push_back(destination);
 
@@ -456,5 +506,6 @@ void RadarSimulator::initializeFromScenarioFiles(const std::string& paths)
     initializeFlights(
         std::move(starts),
         std::move(destinations),
-        std::move(speeds));
+        std::move(speeds),
+        std::move(ids));
 }
