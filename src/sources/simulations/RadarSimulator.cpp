@@ -207,6 +207,20 @@ void RadarSimulator::tick(double timeStep)
 
         updateVelocity(id);
     }
+        // Completed flights must disappear from the next live snapshot.
+    flightIds_.erase(std::remove_if(flightIds_.begin(), flightIds_.end(),
+        [this](const FlightID &id)
+        {
+            if (!remainingWaypoints_.at(id).empty())
+                return false;
+ 
+            flightPositions_.erase(id);
+            flightVelocities_.erase(id);
+            destinations_.erase(id);
+            speedsMps_.erase(id);
+            remainingWaypoints_.erase(id);
+            return true;
+        }), flightIds_.end());
 }
 
 RadarSimulator::FlightPosition

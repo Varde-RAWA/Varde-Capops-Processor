@@ -124,7 +124,7 @@ TEST_CASE("Multiple simulation ticks accumulate aircraft movement")
 
 
 
-TEST_CASE("Simulation retains its destination and stops there", "[waypoints]")
+TEST_CASE("Simulation removes aircraft on arrival")
 {
     RadarSimulator simulator(waypointGrid());
 
@@ -143,14 +143,18 @@ TEST_CASE("Simulation retains its destination and stops there", "[waypoints]")
     // Destination is approximately ten seconds away.
     simulator.tick(20.0);
 
-    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.01));
-    REQUIRE(simulator.getPosition("SIM-0").second == Catch::Approx(4.6));
-    REQUIRE(simulator.getVelocity("SIM-0").first == 0.0);
-    REQUIRE(simulator.getVelocity("SIM-0").second == 0.0);
+    REQUIRE_FALSE(simulator.containsFlight("SIM-0"));
+    REQUIRE(simulator.getFlights().empty());
+    REQUIRE_FALSE(simulator.getDestination("SIM-0"));
 
+    TrackSourceSimulated source(simulator);
+    REQUIRE_FALSE(source.getTrack("SIM-0"));
+
+    // Further ticks must not restore the completed aircraft.
     simulator.tick(20.0);
 
-    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.01));
+    REQUIRE_FALSE(simulator.containsFlight("SIM-0"));
+    REQUIRE(simulator.getFlights().empty());
 }
 
 TEST_CASE("Simulation follows waypoints and carries time across turns")
@@ -187,13 +191,13 @@ TEST_CASE("Simulation follows waypoints and carries time across turns")
     REQUIRE(track->getGroundSpeedKnots() ==
             Catch::Approx(111.32 * 3600.0 / 1852.0));
 
-    // One large tick crosses the remaining legs without overshooting.
+    // One large tick completes the remaining legs and removes the aircraft.
     simulator.tick(1000.0);
 
-    REQUIRE(simulator.getPosition("SIM-0").first == Catch::Approx(60.02));
-    REQUIRE(simulator.getPosition("SIM-0").second == Catch::Approx(4.61));
-    REQUIRE(simulator.getVelocity("SIM-0").first == 0.0);
-    REQUIRE(simulator.getVelocity("SIM-0").second == 0.0);
+    REQUIRE_FALSE(simulator.containsFlight("SIM-0"));
+    REQUIRE(simulator.getFlights().empty());
+    REQUIRE_FALSE(simulator.getDestination("SIM-0"));
+    REQUIRE_FALSE(source.getTrack("SIM-0"));
 }
 
 TEST_CASE("Simulation ignores unknown flights and rejects invalid routes")
