@@ -67,7 +67,7 @@ TEST_CASE("Vektor creates a proposal for an eligible alert")
     REQUIRE(proposal->alertId == f.alert.alertId);
     REQUIRE(proposal->icao == f.track.getIcao());
     REQUIRE(proposal->zoneId == f.area.getId());
-    REQUIRE(proposal->detour.waypoints.size() == 2);
+    REQUIRE(proposal->detour.waypoints.size() == 3);
 
     REQUIRE(f.manager.state(proposal->proposalId) ==
             ProposalState::Proposed);

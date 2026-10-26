@@ -172,7 +172,7 @@ Each aircraft must be a GeoJSON Point feature with:
 
 Aircraft fly toward their destinations and stop when they arrive. Approved Vektor detours can change their routes.
 
-Vektor proposals include an additional direction waypoint after the detour's last turning point.
+Vektor proposals include an extra waypoint after the detour's last turning point, placed toward the destination. It represents about 12 seconds at the reported ground speed, capped at the destination. Simulated ground speed includes the simulator's 5× multiplier, so this corresponds to about 60 seconds at the scenario's configured speed. The point splits the final leg and adds no distance or delay.
 
 `timestepSize` controls simulated seconds advanced per cycle. `loopIntervalMs` controls the pause after each processing cycle, in milliseconds. Processing time adds to that pause. Values of `0.5` and `500` give approximately real-time simulation before any speed multiplier.
 

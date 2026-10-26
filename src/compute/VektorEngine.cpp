@@ -237,8 +237,9 @@ std::optional<Detour> VektorEngine::calculateDetour(
         result.waypoints.push_back(nodes[v].geographic);
     std::reverse(result.waypoints.begin(), result.waypoints.end());
 
-    // Adding extra waypoint to show direction of flight after detour
-    // Show approximately 60 seconds of flight after the detour.
+    // Show approximately 60 seconds of flight at scenario speed after the
+    // detour. Simulated tracks report ground speed at the 5x multiplier, so
+    // use 12 seconds at that reported speed.
     constexpr double continuationSeconds = 12.0;
 
     if (!result.waypoints.empty())
