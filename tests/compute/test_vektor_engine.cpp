@@ -39,12 +39,31 @@ TEST_CASE("Vektor chooses the SRS northern detour")
         Zone("D-101", ZoneType::Danger, rectangle()));
 
     REQUIRE(result);
-    REQUIRE(result->waypoints.size() == 2);
+    REQUIRE(result->waypoints.size() == 3);
 
     REQUIRE(result->waypoints[0].latDeg == Catch::Approx(60.10));
     REQUIRE(result->waypoints[0].lonDeg == Catch::Approx(4.90));
     REQUIRE(result->waypoints[1].latDeg == Catch::Approx(60.10));
     REQUIRE(result->waypoints[1].lonDeg == Catch::Approx(5.30));
+
+    // The extra point continues toward the destination for 12 seconds at
+    // the engine's route speed. This fixture uses a 360-knot track.
+    const Position lastTurn = result->waypoints[1];
+    const Position directionPoint = result->waypoints[2];
+    const double destinationFraction =
+        (directionPoint.lonDeg - lastTurn.lonDeg) /
+        (destination.lonDeg - lastTurn.lonDeg);
+    REQUIRE(destinationFraction > 0.0);
+    REQUIRE(destinationFraction < 1.0);
+    REQUIRE(directionPoint.latDeg == Catch::Approx(
+        lastTurn.latDeg + destinationFraction *
+        (destination.latDeg - lastTurn.latDeg)));
+    const double longitudeScale =
+        111.32 * std::cos(60.02 * std::acos(-1.0) / 180.0);
+    const double continuationKm = std::hypot(
+        (directionPoint.lonDeg - lastTurn.lonDeg) * longitudeScale,
+        (directionPoint.latDeg - lastTurn.latDeg) * 111.32);
+    REQUIRE(continuationKm == Catch::Approx(0.1852 * 12.0).margin(0.02));
 
     // The printed SRS example rounds latitude to 60 degrees.
     // VD-FUN-021 requires using the actual track latitude: 60.02.
@@ -94,7 +113,7 @@ TEST_CASE("Vektor also chooses the shorter southern side")
         Zone("D-101", ZoneType::Danger, rectangle()));
 
     REQUIRE(result);
-    REQUIRE(result->waypoints.size() == 2);
+    REQUIRE(result->waypoints.size() == 3);
     REQUIRE(result->waypoints[0].latDeg == Catch::Approx(59.90));
     REQUIRE(result->waypoints[1].latDeg == Catch::Approx(59.90));
 }
@@ -125,7 +144,7 @@ TEST_CASE("Vektor normalizes ring direction and concave polygons")
         Zone("D-101", ZoneType::Danger, vertices));
 
     REQUIRE(result);
-    REQUIRE(result->waypoints.size() == 2);
+    REQUIRE(result->waypoints.size() == 3);
     REQUIRE(result->waypoints[0].latDeg == Catch::Approx(60.10));
     REQUIRE(result->waypoints[1].latDeg == Catch::Approx(60.10));
 }
