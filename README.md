@@ -172,6 +172,8 @@ Each aircraft must be a GeoJSON Point feature with:
 
 Aircraft fly toward their destinations and stop when they arrive. Approved Vektor detours can change their routes.
 
+Vektor proposals include an additional direction waypoint after the detour's last turning point.
+
 `timestepSize` controls simulated seconds advanced per cycle. `loopIntervalMs` controls the pause after each processing cycle, in milliseconds. Processing time adds to that pause. Values of `0.5` and `500` give approximately real-time simulation before any speed multiplier.
 
 The current simulator applies a hardcoded 5× speed multiplier in `RadarSimulator.cpp`. This affects both movement and reported ground speed. Changing this multiplier requires rebuilding.

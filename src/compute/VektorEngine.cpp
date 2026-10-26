@@ -236,6 +236,33 @@ std::optional<Detour> VektorEngine::calculateDetour(
     for (std::size_t v = previous[1]; v != 0; v = previous[v])
         result.waypoints.push_back(nodes[v].geographic);
     std::reverse(result.waypoints.begin(), result.waypoints.end());
+
+    // Adding extra waypoint to show direction of flight after detour
+    // Show approximately 60 seconds of flight after the detour.
+    constexpr double continuationSeconds = 12.0;
+
+    if (!result.waypoints.empty())
+    {
+        const Position last = result.waypoints.back();
+        const double remainingKm = distance(project(last), d);
+
+        if (remainingKm > epsilonKm)
+        {
+            const double fraction =
+                std::min(1.0, speed * continuationSeconds / remainingKm);
+
+            const Position directionPoint =
+                fraction == 1.0
+                    ? destination
+                    : Position{
+                          last.latDeg + fraction * (destination.latDeg - last.latDeg),
+                          last.lonDeg + fraction * (destination.lonDeg - last.lonDeg)
+                      };
+
+            result.waypoints.push_back(directionPoint);
+        }
+    }
+
     result.extraDistanceKm = std::max(0.0, best[1] - distance(p, d));
     result.extraTimeSeconds = result.extraDistanceKm / speed;
     return result;
