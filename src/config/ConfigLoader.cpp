@@ -174,14 +174,13 @@ void validateConfiguration(ConfigurationValues& values)
         "simulation.timestepSize must be finite and greater than zero");
     require(values.loopIntervalMs > 0, "execution.loopIntervalMs must be greater than zero");
     require(values.zoneSource == "file" || values.zoneSource == "api", "zones.source must be file or api");
-    require(!values.zoneFile.empty(), "zones.file must not be empty");
-    require(!values.avoidanceFile.empty(), "zones.avoidanceFile must not be empty");
-    require(values.zoneRefreshSeconds > 0, "zones.refreshSeconds must be greater than zero");
-    if (values.zoneSource == "api")
-    {
+    if (values.zoneSource == "file"){
+        require(!values.zoneFile.empty(), "zones.file must not be empty");
+        require(!values.avoidanceFile.empty(), "zones.avoidanceFile must not be empty");}
+    else{
         requireUrl(values.zoneApiUrl, "zones.apiUrl", false);
         requireUrl(values.avoidanceApiUrl, "zones.avoidanceApiUrl", false);
-    }
+        require(values.zoneRefreshSeconds > 0, "zones.refreshSeconds must be greater than zero");}
     if (values.sourceType == SourceType::Simulation)
     {
         require(!values.scenarioFiles.empty(), "simulation.scenarioFiles must not be empty");

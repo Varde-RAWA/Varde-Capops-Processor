@@ -13,6 +13,7 @@
 static constexpr char BASE_URL[] = "https://opensky-network.org/api";
 static constexpr double MS_TO_KNOTS = 1.94384;
 static constexpr double MS_TO_FPM = 196.850;
+static constexpr double METRES_TO_FEET = 3.28084;
 
 TrackSourceOpenSky::TrackSourceOpenSky() : ITrackSource()
 {
@@ -68,9 +69,16 @@ std::optional<Track> TrackSourceOpenSky::getTrack(const std::string &icao) const
 
         ApiResponse response = parseStates(stateArray);
 
-        return Track(response.icao24, "", Position{response.latitude, response.longitude},
-                     response.baroAltitude, response.velocity, response.verticalRate,
-                     response.trueTrack, 0);
+        return Track(
+        response.icao24,
+        response.timestamp,
+        Position{response.latitude, response.longitude},
+        response.baroAltitude * METRES_TO_FEET,
+        response.velocity,
+        response.verticalRate,
+        response.trueTrack, 
+        response.trueTrack 
+        );
     }
 
     return std::nullopt;
@@ -99,9 +107,16 @@ std::vector<Track> TrackSourceOpenSky::getAllTracks() const
 
         ApiResponse parsed = parseStates(stateArray);
 
-        tracks.emplace_back(parsed.icao24, parsed.timestamp,
-                            Position{parsed.latitude, parsed.longitude}, parsed.baroAltitude,
-                            parsed.velocity, parsed.verticalRate, parsed.trueTrack, 0);
+        tracks.emplace_back(
+        parsed.icao24,
+        parsed.timestamp,
+        Position{parsed.latitude, parsed.longitude},
+        parsed.baroAltitude * METRES_TO_FEET,
+        parsed.velocity,
+        parsed.verticalRate,
+        parsed.trueTrack,
+        parsed.trueTrack 
+        );
     }
 
     return tracks;

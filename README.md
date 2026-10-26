@@ -54,7 +54,7 @@ redisChannel=flightdata
 
 ## Zone sources
 
-Choose the zone source in `configuration.cfg`. This is independent of the aircraft source: simulated aircraft can use API zones or local zones.
+Choose the zone source in `configuration.cfg`. The `[zones] source` setting controls both restricted zones and avoidance areas. This is independent of `[dataSource] type`, which selects simulated aircraft or OpenSky. Restart the processor after changing either setting.
 
 ### Geo Service API
 
@@ -64,21 +64,22 @@ Start the Geo Service separately, then configure:
 [zones]
 source=api
 apiUrl=http://localhost:5040/collections/restricted-areas/items
-file=data/zones.geojson
+avoidanceApiUrl=http://localhost:5040/collections/avoidance-areas/items
 refreshSeconds=30
 ```
 
-Check that the endpoint responds:
+Check that both endpoints respond:
 
 ```sh
 curl --fail --show-error http://localhost:5040/collections/restricted-areas/items
+curl --fail --show-error http://localhost:5040/collections/avoidance-areas/items
 ```
 
-The endpoint returns a GeoJSON `FeatureCollection`. The processor uses features whose `properties.active` value is `true`, so the response may contain both active and inactive zones. It follows pagination links and currently supports `Polygon` geometries with one closed ring.
+Each endpoint returns a GeoJSON `FeatureCollection`. The processor uses features whose `properties.active` value is `true`, so the response may contain both active and inactive zones. It follows pagination links and currently supports `Polygon` geometries with one closed ring.
 
-The processor requests zones at startup and refreshes them every 30 seconds by default. Requests run in the background while aircraft processing continues.
+In API mode, the processor fetches restricted zones and avoidance areas before aircraft processing starts. Both initial requests must succeed; otherwise startup fails. Local zone files are not read, and there is no automatic fallback to files.
 
-The configured local zone file must exist and contain valid GeoJSON **even in API mode**. It supplies the initial zones until the first successful API response. If a later request fails, the processor logs the failure and keeps the last successfully loaded zones in memory. The cache is not saved to disk.
+After startup, both collections refresh in the background every `refreshSeconds` seconds, as processing cycles allow. If a refresh fails, the processor logs the failure and keeps that collection's last successful API data in memory. A successful empty collection replaces the previous data. The cache is not saved to disk.
 
 ### Local file without the Geo Service
 
@@ -87,12 +88,13 @@ To run without the API, change the zone source to `file`:
 ```ini
 [zones]
 source=file
-apiUrl=http://localhost:5040/collections/restricted-areas/items
 file=data/zones.geojson
-refreshSeconds=30
+avoidanceFile=data/avoidance-areas.geojson
 ```
 
-The processor loads `data/zones.geojson` once at startup and makes no zone API requests. Restart it after changing the file. File mode uses the stored `active` flags; it does not recalculate activation windows.
+In file mode, the processor loads both configured files once at startup and makes no zone API requests. Both files must exist and contain valid GeoJSON; a load failure stops startup. Restart the processor after changing either file. File mode uses the stored `active` flags; it does not recalculate activation windows.
+
+At startup, the processor logs the selected zone source and the number of restricted zones and avoidance areas loaded.
 
 Redis is required in both modes.
 
@@ -113,7 +115,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/Qt/6
 
 Replace the example path with your installed Qt directory, such as its `gcc_64` or `macos` directory.
 
-With Redis running and the desired zone source configured, start the processor from the repository root so it can find `configuration.cfg` and `data/zones.geojson`:
+With Redis running and the desired zone source configured, start the processor from the repository root so it can find `configuration.cfg` and resolve any configured relative file paths:
 
 ```sh
 ./build/backend
@@ -189,9 +191,25 @@ Available scenarios:
 
 The random scenario has varied starting positions, destinations near the map boundary, and configured speeds of 200–450 knots before the simulator multiplier. Scenario files configure aircraft; restricted and avoidance zones are configured separately under `[zones]`.
 
-OpenSky API mode is not yet verified. Use `type=sim` for the tested scenario-based simulation.
+### OpenSky aircraft
 
-`loopIntervalMs=500` adds a half-second pause between processing cycles. Zone fetching has its own refresh interval; it does not make an HTTP request every cycle.
+OpenSky API mode is not yet verified end to end. Use `type=sim` for the tested scenario-based simulation. To select OpenSky for a short live test, configure:
+
+```ini
+[dataSource]
+type=api
+
+[execution]
+loopIntervalMs=10000
+```
+
+Each processing cycle requests aircraft inside the configured `[grid]` bounds. `loopIntervalMs` controls the pause after the entire cycle, so increasing it also slows publishing, alert checks, and decision handling. It is not a separate OpenSky polling timer. In simulation mode, no OpenSky requests are sent; `loopIntervalMs=500` remains suitable for the simulation example above.
+
+The current OpenSky client makes unauthenticated requests. Anonymous data has 10-second time resolution, so polling faster generally does not provide fresher data. A 30-second interval is not required and does not guarantee avoiding rate limits. OpenSky currently documents 400 anonymous credits per day, shared by IP address; the example region in `configuration.cfg` costs one credit per request. From a full allowance, polling every 10 seconds consumes that budget in approximately 67 minutes, or every 30 seconds in approximately 3 hours 20 minutes. Other clients sharing the IP also consume the allowance. See the [OpenSky limits and API credits](https://openskynetwork.github.io/opensky-api/rest.html#limitations) for current policies.
+
+On HTTP `429 Too Many Requests`, OpenSky's `X-Rate-Limit-Retry-After-Seconds` response header indicates how long to wait. Restarting the processor or increasing the interval does not clear an exhausted allowance. The current client throws on request errors and stops the processor; it does not automatically wait and retry.
+
+Geo Service zone requests use the separate `[zones] refreshSeconds` setting. Changing it does not change OpenSky request frequency.
 
 If the processor runs inside Docker, connect it to the same Docker network as Redis
 and use `redisUrl=tcp://redis:6379?connect_timeout=200ms&socket_timeout=200ms`.
