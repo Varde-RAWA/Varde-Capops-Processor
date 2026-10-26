@@ -15,10 +15,23 @@ ZoneCache::ZoneCache(const Configuration& config, Fetch fetch, Now now)
       refreshInterval_(config.getZoneRefreshSeconds()),
       fetch_(std::move(fetch)),
       now_(std::move(now)),
-      zones_(ZoneSourceGeoService::loadFile(config.getZoneFile())),
       nextZoneRefresh_(now_()),
       nextAvoidanceRefresh_(now_())
 {
+    if (!apiMode_)
+    {
+        zones_ = ZoneSourceGeoService::loadFile(
+            config.getZoneFile());
+
+        avoidanceAreas_ = ZoneSourceGeoService::loadFile(
+            config.getAvoidanceFile());
+
+        std::clog << "Zone source: local files. Restricted: "
+                  << zones_.size() << ", avoidance: "
+                  << avoidanceAreas_->size() << '\n';
+        return;
+    }
+
     if (!fetch_)
     {
         fetch_ = [](const std::string& url)
@@ -31,15 +44,19 @@ ZoneCache::ZoneCache(const Configuration& config, Fetch fetch, Now now)
         };
     }
 
-    try
-    {
-        avoidanceAreas_ = ZoneSourceGeoService::loadFile(config.getAvoidanceFile());
-    }
-    catch (const std::exception& error)
-    {
-        std::cerr << "Avoidance data unavailable; continuing zone warnings: "
-                  << error.what() << '\n';
-    }
+    auto initialZones = fetch_(zoneApiUrl_);
+    auto initialAvoidance = fetch_(avoidanceApiUrl_);
+
+    zones_ = initialZones.get();
+    avoidanceAreas_ = initialAvoidance.get();
+
+    const auto nextRefresh = now_() + refreshInterval_;
+    nextZoneRefresh_ = nextRefresh;
+    nextAvoidanceRefresh_ = nextRefresh;
+
+    std::clog << "Zone source: API. Restricted: "
+              << zones_.size() << ", avoidance: "
+              << avoidanceAreas_->size() << '\n';
 }
 
 const ZoneCache::Zones& ZoneCache::zones() const
