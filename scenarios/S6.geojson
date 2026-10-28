@@ -21,7 +21,7 @@
           59.96
         ],
         "startDelaySeconds": 0,
-        "groundSpeedKt": 330
+        "groundSpeedKt": 990
       }
     },
     {
@@ -43,7 +43,7 @@
           59.47
         ],
         "startDelaySeconds": 0,
-        "groundSpeedKt": 360
+        "groundSpeedKt": 1180
       }
     }
   ]
