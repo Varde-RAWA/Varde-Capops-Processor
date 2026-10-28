@@ -1,6 +1,7 @@
 #include "publish/RedisPublisher.hpp"
 #include "publish/ProtoMapper.hpp"
 #include "publish/SerializationError.hpp"
+#include "utils/time/IsoTimestamp.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -21,6 +22,7 @@ RedisPublisher::RedisPublisher(
 void RedisPublisher::publish(const ProcessingResult &result)
 {
     varde::events::FlightDataProto proto = mapToProto(result, config_);
+    proto.mutable_metadata()->set_runid(runId_);
 
     std::string serialized;
     if (!proto.SerializeToString(&serialized))
@@ -50,7 +52,8 @@ void RedisPublisher::publish(const ProcessingResult &result)
 
 std::string RedisPublisher::publishAlert(const AlertEvent &event)
 {
-    const auto proto = mapToProto(event, config_);
+    auto proto = mapToProto(event, config_);
+    proto.mutable_metadata()->set_runid(runId_);
 
     std::string serialized;
     if (!proto.SerializeToString(&serialized))
@@ -68,7 +71,8 @@ std::string RedisPublisher::publishAlert(const AlertEvent &event)
 
 std::string RedisPublisher::publishProposal(const VektorProposal &proposal)
 {
-    const auto proto = mapToProto(proposal, config_);
+    auto proto = mapToProto(proposal, config_);
+    proto.mutable_metadata()->set_runid(runId_);
     std::string bytes;
     if (!proto.SerializeToString(&bytes))
         throw SerializationError("Failed to serialize VektorProposalEvent");
@@ -76,3 +80,26 @@ std::string RedisPublisher::publishProposal(const VektorProposal &proposal)
     return redis_.xadd(proposalStream_, "*", fields.begin(), fields.end(), 10000, true);
 }
 
+void RedisPublisher::publishRunStarted()
+{
+    varde::events::ProcessorRunStarted proto;
+
+    auto* metadata = proto.mutable_metadata();
+    metadata->set_version(config_.getProtobufVersion());
+    metadata->set_timestamp(createIsoTimestamp());
+    metadata->set_runid(runId_);
+
+    proto.set_runid(runId_);
+
+    std::string bytes;
+    if (!proto.SerializeToString(&bytes))
+        throw SerializationError("Failed to serialize ProcessorRunStarted");
+
+    const std::vector<std::pair<std::string, std::string>> fields{
+        {"data", bytes}
+    };
+
+    redis_.xadd(
+        "varde:processor-runs", "*",
+        fields.begin(), fields.end());
+}
