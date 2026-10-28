@@ -260,3 +260,48 @@ separate issue. The complete S3 approval/rejection demonstration and
 S4 performance measurement remain outstanding.
 
 Scenario-file loading and start delays also remain separate work.
+
+## Decision 007: Identify processor runs in Protobuf messages
+
+**Date:** 28.10.26
+**Status:** Implemented in the processor
+
+### Context
+
+Redis Streams retain events after the processor restarts, while the
+processor's alert and proposal state is held in memory. Without a run
+identifier, consumers cannot reliably distinguish events from different
+processor executions, especially when simulation scenarios reuse the
+same aircraft identifiers.
+
+### Decision
+
+Generate a new UUID when the processor starts and include it as
+`MetadataProto.runId` in every outgoing aircraft snapshot, zone alert,
+and Vektor proposal.
+
+Publish a `ProcessorRunStarted` event to `varde:processor-runs` before
+the processing loop begins. Include the same identifier in both its
+metadata and its `runId` field.
+
+Keep the identifier unchanged throughout that execution. Generate a new
+one after every restart.
+
+### Reason
+
+A shared run identifier allows consumers to associate snapshots, alerts,
+and proposals with the execution that produced them. The startup event
+provides an explicit signal that a new processing run has begun.
+
+### Consequences
+
+Consumers can distinguish retained historical events from events
+belonging to a new run and use that information when managing displayed
+or stored state.
+
+The identifier represents a processing run; it does not provide a
+persistent identity for a processor installation.
+
+Restarting does not delete existing Redis entries or automatically clear
+consumer state. Consumers must implement their own handling of run
+changes and messages from older producers that lack the identifier.
