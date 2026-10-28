@@ -43,6 +43,8 @@ void ProcessorApp::run()
 
     const auto sleepDuration = std::chrono::milliseconds(config.getLoopInterval());
 
+    publisher.publishRunStarted();
+
     while (true)
     {
         cycle.runOnce();

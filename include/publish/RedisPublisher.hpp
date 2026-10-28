@@ -5,6 +5,7 @@
 
 #include <sw/redis++/redis++.h>
 #include <string>
+#include <QUuid>
 
 
 class RedisPublisher : public IEventPublisher
@@ -18,6 +19,7 @@ public:
     void publish(const ProcessingResult &result) override;
     std::string publishAlert(const AlertEvent &event) override;
     std::string publishProposal(const VektorProposal &proposal) override;
+    void publishRunStarted();
 
 private:
     const Configuration &config_;
@@ -25,4 +27,5 @@ private:
     std::string channel_;
     std::string alertStream_;
     std::string proposalStream_;
+    const std::string runId_ = QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
 };

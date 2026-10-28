@@ -37,6 +37,8 @@ message MetadataProto {
 
   // Keep this as string because contract v2 used string.
   string timestamp = 2;
+
+  string runId = 3;
 }
 
 
@@ -201,4 +203,11 @@ message AuditEvent {
   string action = 4;
   string target = 5;
   string timestamp = 6;
+}
+
+// ======================================================
+
+message ProcessorRunStarted {
+  MetadataProto metadata = 1;
+  string runId = 2;
 }
