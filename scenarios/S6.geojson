@@ -1,0 +1,50 @@
+{
+  "type": "FeatureCollection",
+  "name": "S6 — Accept, reject, deactivate",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "fa6001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.872609251,
+          59.96
+        ]
+      },
+      "properties": {
+        "icao24": "fa6001",
+        "name": "Plane 1",
+        "description": "Eastbound toward D-101, entering the map from the west. Accept the detour promptly, before its 60-second expiry. At this faster speed the initial turn is gentler than in the slow version.",
+        "destination": [
+          6.507340466,
+          59.96
+        ],
+        "startDelaySeconds": 0,
+        "groundSpeedKt": 330
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fa6002",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.021403778,
+          59.47
+        ]
+      },
+      "properties": {
+        "icao24": "fa6002",
+        "name": "Plane 2",
+        "description": "Westbound through R-201, entering the map from the east. This route crosses only R-201 and its avoidance buffer. Reject the proposal to see predicted, imminent, and infringement alerts.",
+        "destination": [
+          4.85,
+          59.47
+        ],
+        "startDelaySeconds": 0,
+        "groundSpeedKt": 360
+      }
+    }
+  ]
+}
